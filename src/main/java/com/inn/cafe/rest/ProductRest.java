@@ -1,2 +1,4 @@
-package com.inn.cafe.rest;public interface ProductRest {
+package com.inn.cafe.rest;
+
+public interface ProductRest {
 }

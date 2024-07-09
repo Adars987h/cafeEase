@@ -1,2 +1,4 @@
-package com.inn.cafe.service;public interface ProductService {
+package com.inn.cafe.service;
+
+public interface ProductService {
 }
