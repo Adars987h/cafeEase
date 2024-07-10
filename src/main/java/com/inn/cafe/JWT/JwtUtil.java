@@ -48,7 +48,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+ 1000*60*60*24*30 ))//TODO : Remember to change this values to 10 hrs
+                .setExpiration(new Date(System.currentTimeMillis()+ 1000*60*60*24 ))//TODO : Remember to change this values to 10 hrs
                 .signWith(SignatureAlgorithm.HS256,secret).compact();
     }
 
