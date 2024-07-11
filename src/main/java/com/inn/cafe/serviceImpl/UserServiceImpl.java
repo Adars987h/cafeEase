@@ -110,7 +110,7 @@ public class UserServiceImpl implements UserService {
             }
 
         }catch(Exception ex){
-            log.error("{}",ex);
+            log.error(ex.getMessage());
         }
         return  new ResponseEntity<String>("{\"message\":\""+"Bad Credentals."+"\"}",HttpStatus.BAD_REQUEST);
 
@@ -128,6 +128,7 @@ public class UserServiceImpl implements UserService {
             }
 
         }catch(Exception ex){
+            log.error(ex.getMessage());
             ex.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
@@ -152,6 +153,7 @@ public class UserServiceImpl implements UserService {
                 return CafeUtils.getResponseEntity(CafeConstants.UNAUTHORISED_ACCESS,HttpStatus.UNAUTHORIZED);
             }
         }catch(Exception ex){
+            log.error(ex.getMessage());
             ex.printStackTrace();
         }
         return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);

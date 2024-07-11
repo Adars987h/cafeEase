@@ -5,6 +5,7 @@ import com.inn.cafe.constants.CafeConstants;
 import com.inn.cafe.rest.CategoryRest;
 import com.inn.cafe.service.CategoryService;
 import com.inn.cafe.utils.CafeUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Slf4j
 public class CategoryRestImpl implements CategoryRest {
 
     @Autowired
@@ -26,6 +28,7 @@ public class CategoryRestImpl implements CategoryRest {
         try{
             return categoryService.addNewCategory(requestMap);
         }catch (Exception ex){
+            log.error(ex.getMessage());
             ex.printStackTrace();
         }
         return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -47,6 +50,7 @@ public class CategoryRestImpl implements CategoryRest {
         try{
             return categoryService.updateCategory(requestMap);
         }catch(Exception ex){
+            log.error(ex.getMessage());
             ex.printStackTrace();
         }
         return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);

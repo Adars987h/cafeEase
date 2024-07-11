@@ -31,7 +31,18 @@ public class ProductWrapper {
         this.status=status;
         this.categoryId=categoryId;
         this.categoryName=categoryName;
+    }
 
+    public ProductWrapper(int id,String name){
+        this.id=id;
+        this.name=name;
+    }
+
+    public ProductWrapper(int id, String name, String description,int price){
+        this.id=id;
+        this.name=name;
+        this.description=description;
+        this.price=price;
     }
 
 }
