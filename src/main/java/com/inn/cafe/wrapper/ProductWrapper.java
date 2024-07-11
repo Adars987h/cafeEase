@@ -1,6 +1,7 @@
 package com.inn.cafe.wrapper;
 
 
+import com.inn.cafe.POJO.Product;
 import lombok.Data;
 
 @Data
@@ -33,9 +34,14 @@ public class ProductWrapper {
         this.categoryName=categoryName;
     }
 
-    public ProductWrapper(int id,String name){
-        this.id=id;
-        this.name=name;
+    public ProductWrapper(Product product){
+        this.id=product.getId();
+        this.name= product.getName();
+        this.description= product.getDescription();
+        this.price=product.getPrice();
+        this.status=product.getStatus();
+        this.categoryId=product.getCategory().getId();
+        this.categoryName=product.getCategory().getName();
     }
 
     public ProductWrapper(int id, String name, String description,int price){
