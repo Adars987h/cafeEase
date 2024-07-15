@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.inn.cafe</groupId>
-	<artifactId>com.inn.cafe</artifactId>
+	<artifactId>cafeEase</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Cafe Management System</name>
 	<description>First Project on Spring</description>

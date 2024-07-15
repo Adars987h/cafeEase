@@ -13,7 +13,7 @@ public class ProductWrapper {
 
     String description;
 
-    Integer price;
+    Float price;
 
     String status;
 
@@ -24,7 +24,7 @@ public class ProductWrapper {
 
     }
 
-    public ProductWrapper(Integer id,String name,String description, Integer price, String status, Integer categoryId, String categoryName){
+    public ProductWrapper(int id,String name,String description, float price, String status, int categoryId, String categoryName){
         this.id=id;
         this.name=name;
         this.description=description;
@@ -44,7 +44,7 @@ public class ProductWrapper {
         this.categoryName=product.getCategory().getName();
     }
 
-    public ProductWrapper(int id, String name, String description,int price){
+    public ProductWrapper(int id, String name, String description,float price){
         this.id=id;
         this.name=name;
         this.description=description;
