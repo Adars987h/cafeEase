@@ -4,9 +4,9 @@ public class CafeConstants {
 
     public static final String SOMETHING_WENT_WRONG ="Something Went Wrong...";
 
-    public static final String INVALID_DATA ="Invalid Data";
+    public static final String INVALID_PAYLOAD ="Invalid Payload";
 
-    public static final String UNAUTHORISED_ACCESS ="Unauthorized Access";
+    public static final String UNAUTHORISED_ACCESS ="Access Denied - User is not authorized";
 
     public static final String STORE_LOCATION="C:\\Users\\adars\\Desktop\\spring\\com.inn.cafe\\Stored-files";
 }

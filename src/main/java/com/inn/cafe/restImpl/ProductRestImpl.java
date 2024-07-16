@@ -1,6 +1,7 @@
 package com.inn.cafe.restImpl;
 
 import com.inn.cafe.constants.CafeConstants;
+import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.ProductRest;
 import com.inn.cafe.service.ProductService;
 import com.inn.cafe.utils.CafeUtils;
@@ -24,78 +25,86 @@ public class ProductRestImpl implements ProductRest {
     ProductService productService;
 
     @Override
-    public ResponseEntity<String> addNewProduct(Map<String, String> requestMap) {
+    public ResponseEntity<Response> addNewProduct(Map<String, String> requestMap) {
         try{
-            return productService.addNewProduct(requestMap);
+            ProductWrapper productWrapper = productService.addNewProduct(requestMap);
+            return new ResponseEntity<>(new Response(productWrapper, "Product Added Successfully"), HttpStatus.OK);
         }catch (Exception ex){
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<ProductWrapper>> getAllProduct() {
+    public ResponseEntity<Response> getAllProduct() {
         try{
-            return productService.getAllProduct();
+            List<ProductWrapper> allProducts = productService.getAllProduct();
+            return new ResponseEntity<>(new Response(allProducts), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<String> updateProduct(Map<String, String> requestMap) {
+    public ResponseEntity<Response> updateProduct(Map<String, String> requestMap) {
         try{
-            return productService.updateProduct(requestMap);
+            ProductWrapper productWrapper = productService.updateProduct(requestMap);
+            return new ResponseEntity<>(new Response(productWrapper, "Successfully Updated Product"), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<String> deleteProduct(Integer id) {
+    public ResponseEntity<Response> deleteProduct(Integer id) {
         try{
-            return productService.deleteProduct(id);
+            String result = productService.deleteProduct(id);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
         }catch (Exception ex){
             ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<String> updateStatus(Map<String, String> requestMap) {
+    public ResponseEntity<Response> updateStatus(Map<String, String> requestMap) {
         try{
-            return productService.updateStatus(requestMap);
+            String result = productService.updateStatus(requestMap);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<ProductWrapper>> getByCategory(Integer id) {
+    public ResponseEntity<Response> getByCategory(Integer id) {
         try{
-            return productService.getByCategory(id);
+            List<ProductWrapper> products = productService.getByCategory(id);
+            return new ResponseEntity<>(new Response(products), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return new ResponseEntity<>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<ProductWrapper> getProductById(int id) {
+    public ResponseEntity<Response> getProductById(int id) {
         try{
-            return productService.getProductById(id);
+            ProductWrapper product = productService.getProductById(id);
+            return new ResponseEntity<>(new Response(product), HttpStatus.OK);
         }catch(Exception ex){
+            log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return new ResponseEntity<>(new ProductWrapper(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 

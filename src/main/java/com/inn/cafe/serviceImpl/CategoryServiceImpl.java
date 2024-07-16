@@ -37,10 +37,10 @@ public class CategoryServiceImpl implements CategoryService {
                     }
                     return categoryDao.save(getCategoryFromMap(requestMap, false));
                 }else {
-                    throw new BadRequestException("Invalid Payload");
+                    throw new BadRequestException(CafeConstants.INVALID_PAYLOAD);
                 }
             } else {
-                throw new UnauthorizedException("Access Denied - User is not authorized");
+                throw new UnauthorizedException(CafeConstants.UNAUTHORISED_ACCESS);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -77,9 +77,9 @@ public class CategoryServiceImpl implements CategoryService {
                         throw new BadRequestException("Category id does not exist");
                     }
                 }
-                throw new BadRequestException(CafeConstants.INVALID_DATA);
+                throw new BadRequestException(CafeConstants.INVALID_PAYLOAD);
             }else{
-                throw new UnauthorizedException("Access Denied - User is not authorized");
+                throw new UnauthorizedException(CafeConstants.UNAUTHORISED_ACCESS);
             }
         }catch (Exception ex){
             ex.printStackTrace();

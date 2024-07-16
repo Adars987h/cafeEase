@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
                     return CafeUtils.getResponseEntity("Email already exists", HttpStatus.BAD_REQUEST);
                 }
             } else {
-                return CafeUtils.getResponseEntity(CafeConstants.INVALID_DATA, HttpStatus.BAD_REQUEST);
+                return CafeUtils.getResponseEntity(CafeConstants.INVALID_PAYLOAD, HttpStatus.BAD_REQUEST);
             }
         }catch (Exception ex){
             ex.printStackTrace();

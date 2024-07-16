@@ -1,5 +1,6 @@
 package com.inn.cafe.service;
 
+import com.inn.cafe.POJO.Product;
 import com.inn.cafe.wrapper.ProductWrapper;
 import org.springframework.http.ResponseEntity;
 
@@ -8,18 +9,17 @@ import java.util.Map;
 
 public interface ProductService {
 
-    ResponseEntity<String> addNewProduct(Map<String,String> requestMap);
+    ProductWrapper addNewProduct(Map<String,String> requestMap);
 
-    ResponseEntity<List<ProductWrapper>> getAllProduct();
+    List<ProductWrapper> getAllProduct();
 
-    ResponseEntity<String> updateProduct(Map<String,String> requestMap);
+    ProductWrapper updateProduct(Map<String,String> requestMap);
 
+    String deleteProduct(Integer id);
 
-    ResponseEntity<String> deleteProduct(Integer id);
+    String updateStatus(Map<String, String> requestMap);
 
-    ResponseEntity<String> updateStatus(Map<String, String> requestMap);
+    List<ProductWrapper> getByCategory(int id);
 
-    ResponseEntity<List<ProductWrapper>> getByCategory(int id);
-
-    ResponseEntity<ProductWrapper> getProductById(int id);
+    ProductWrapper getProductById(int id);
 }
