@@ -1,6 +1,7 @@
 package com.inn.cafe.POJO;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +35,7 @@ public class Order {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_fk", nullable = false)
-    private User customerId;
+    private User customer;
 
     @Transient
     private CustomerWrapper customerDetails;
@@ -50,8 +51,10 @@ public class Order {
     private List<OrderItem> items;
 
     @Column
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime orderDateAndTime;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "orderstatus", columnDefinition = "nvarchar(500)")
     private OrderStatus orderStatus;
 
@@ -68,6 +71,6 @@ public class Order {
     public void postLoad() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         this.items = objectMapper.readValue(this.itemsJson, new TypeReference<List<OrderItem>>() {});
-        this.customerDetails = new CustomerWrapper(this.customerId);
+        this.customerDetails = new CustomerWrapper(this.customer);
     }
 }

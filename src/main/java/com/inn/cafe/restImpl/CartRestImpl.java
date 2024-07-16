@@ -2,6 +2,7 @@ package com.inn.cafe.restImpl;
 
 import com.inn.cafe.POJO.Cart;
 import com.inn.cafe.dto.OrderItem;
+import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.CartRest;
 import com.inn.cafe.service.CartService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +22,14 @@ public class CartRestImpl implements CartRest {
     CartService cartService;
 
     @Override
-    public ResponseEntity<Cart> addOrUpdateItem(@RequestBody List<OrderItem> items) {
+    public ResponseEntity<Response> addOrUpdateItem(@RequestBody List<OrderItem> items) {
         try {
             Cart cart = cartService.addOrUpdateItem(items);
-            return new ResponseEntity<>(cart, HttpStatus.OK);
+            return new ResponseEntity<>(new Response(cart), HttpStatus.OK);
         } catch (Exception ex) {
             log.error(ex.getMessage());
             ex.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }

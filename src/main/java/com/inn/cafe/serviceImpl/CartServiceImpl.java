@@ -45,19 +45,6 @@ public class CartServiceImpl implements CartService {
             updatedCart.setCustomerId(user);
             return cartDao.save(updatedCart);
 
-
-//            Cart updatedCart;
-//            if (Objects.isNull(cart)) {
-//                updatedCart = setCartItemsAndTotalPrice(new ArrayList<>(), items);
-//                updatedCart.setCustomerId(user);
-//                return cartDao.save(updatedCart);
-//            } else {
-//                updatedCart = setCartItemsAndTotalPrice(cart.getItems(), items);
-//                cart.setItems(updatedCart.getItems());
-//                cart.setTotalAmount(updatedCart.getTotalAmount());
-//                return cartDao.save(cart);
-//            }
-
         } catch (Exception ex) {
             throw ex;
         }

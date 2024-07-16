@@ -2,6 +2,7 @@ package com.inn.cafe.rest;
 
 import com.inn.cafe.POJO.Cart;
 import com.inn.cafe.dto.OrderItem;
+import com.inn.cafe.dto.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,5 +14,5 @@ import java.util.List;
 public interface CartRest {
 
     @PutMapping
-    ResponseEntity<Cart> addOrUpdateItem(@RequestBody List<OrderItem> items);
+    ResponseEntity<Response> addOrUpdateItem(@RequestBody List<OrderItem> items);
 }
