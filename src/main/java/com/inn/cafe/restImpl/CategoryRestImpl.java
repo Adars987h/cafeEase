@@ -1,18 +1,15 @@
 package com.inn.cafe.restImpl;
 
 import com.inn.cafe.POJO.Category;
-import com.inn.cafe.constants.CafeConstants;
+import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.CategoryRest;
 import com.inn.cafe.service.CategoryService;
-import com.inn.cafe.utils.CafeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,35 +21,37 @@ public class CategoryRestImpl implements CategoryRest {
     CategoryService categoryService;
 
     @Override
-    public ResponseEntity<String> addNewCategory(Map<String, String> requestMap) {
+    public ResponseEntity<Response> addNewCategory(Map<String, String> requestMap) {
         try{
-            return categoryService.addNewCategory(requestMap);
+            Category category = categoryService.addNewCategory(requestMap);
+            return new ResponseEntity<>(new Response(category, "Category Added Successfully"), HttpStatus.OK);
         }catch (Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<Category>> getAllCategories(String filterValue) {
+    public ResponseEntity<Response> getAllCategories(String filterValue) {
         try{
-            return categoryService.getAllCategories(filterValue);
+            List<Category> categories = categoryService.getAllCategories(filterValue);
+            return new ResponseEntity<>(new Response(categories), HttpStatus.OK);
         }catch (Exception ex){
             ex.printStackTrace();
+            throw ex;
         }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
     @Override
-    public ResponseEntity<String> updateCategory(Map<String, String> requestMap) {
+    public ResponseEntity<Response> updateCategory(Map<String, String> requestMap) {
         try{
-            return categoryService.updateCategory(requestMap);
+            Category category = categoryService.updateCategory(requestMap);
+            return new ResponseEntity<>(new Response(category, "Category Updated Successfully"), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

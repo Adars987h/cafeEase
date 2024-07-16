@@ -8,9 +8,9 @@ import java.util.Map;
 
 public interface CategoryService {
 
-    ResponseEntity<String> addNewCategory(Map<String,String> requestMap);
+    Category addNewCategory(Map<String,String> requestMap);
 
-    ResponseEntity<List<Category>> getAllCategories(String filterValue);
+    List<Category> getAllCategories(String filterValue);
 
-    ResponseEntity<String> updateCategory(Map<String,String> requestMap);
+    Category updateCategory(Map<String,String> requestMap);
 }

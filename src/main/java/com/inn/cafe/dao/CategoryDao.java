@@ -13,5 +13,8 @@ public interface CategoryDao extends JpaRepository<Category,Integer> {
 //    @Query("SELECT c FROM Category c WHERE c.name LIKE %:name%")
     List<Category> getAllCategory(@Param("name") String name);
 
+    @Query("SELECT COUNT(c) > 0 FROM Category c WHERE c.name = :name")
+    boolean isPresent(@Param("name") String name);
+
 
 }
