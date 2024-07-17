@@ -31,7 +31,7 @@ public class ProductRestImpl implements ProductRest {
             return new ResponseEntity<>(new Response(productWrapper, "Product Added Successfully"), HttpStatus.OK);
         }catch (Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
             throw ex;
         }
     }
@@ -43,7 +43,7 @@ public class ProductRestImpl implements ProductRest {
             return new ResponseEntity<>(new Response(allProducts), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
             throw ex;
         }
     }
@@ -55,7 +55,7 @@ public class ProductRestImpl implements ProductRest {
             return new ResponseEntity<>(new Response(productWrapper, "Successfully Updated Product"), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
             throw ex;
         }
     }
@@ -66,7 +66,8 @@ public class ProductRestImpl implements ProductRest {
             String result = productService.deleteProduct(id);
             return new ResponseEntity<>(new Response(result), HttpStatus.OK);
         }catch (Exception ex){
-            ex.printStackTrace();
+            log.error(ex.getMessage());
+//            ex.printStackTrace();
             throw ex;
         }
     }
@@ -78,7 +79,7 @@ public class ProductRestImpl implements ProductRest {
             return new ResponseEntity<>(new Response(result), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
             throw ex;
         }
     }
@@ -90,19 +91,19 @@ public class ProductRestImpl implements ProductRest {
             return new ResponseEntity<>(new Response(products), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
             throw ex;
         }
     }
 
     @Override
-    public ResponseEntity<Response> getProductById(int id) {
+    public ResponseEntity<Response> getProductById(Integer id) {
         try{
             ProductWrapper product = productService.getProductById(id);
             return new ResponseEntity<>(new Response(product), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
             throw ex;
         }
     }

@@ -9,6 +9,7 @@ import com.inn.cafe.dao.CartDao;
 import com.inn.cafe.dao.OrderDao;
 import com.inn.cafe.dto.OrderSearchRequest;
 import com.inn.cafe.enums.OrderStatus;
+import com.inn.cafe.exceptions.BadRequestException;
 import com.inn.cafe.service.CartService;
 import com.inn.cafe.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +93,26 @@ public class OrderServiceImpl implements OrderService {
             }
             return orders;
         }catch (Exception ex){
+            throw ex;
+        }
+    }
+
+    @Override
+    public String cancelOrder(Integer orderId) {
+        try{
+            Order order = orderDao.findByOrderId(orderId);
+            User currentUser = customerUserDetailsService.getUserDetail();
+            if (Objects.nonNull(order)){
+                if (jwtFilter.isAdmin()||(jwtFilter.isUser()&& Objects.equals(order.getCustomer().getId(), currentUser.getId()))){
+                    orderDao.deleteById(orderId);
+
+                    return "Order : "+orderId+" deleted Successfully...";
+                }
+                throw new BadRequestException("Please enter a Valid Order Id !!!!!");
+            }
+            throw new BadRequestException("Please enter a Valid Order Id !!!!!");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
             throw ex;
         }
     }

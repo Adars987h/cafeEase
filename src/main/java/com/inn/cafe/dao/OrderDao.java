@@ -22,4 +22,6 @@ public interface OrderDao extends JpaRepository<Order, Integer> {
 
     @Query("SELECT o FROM Order o WHERE o.orderDateAndTime BETWEEN :startTime AND :endTime AND o.orderId = :orderId")
     List<Order> findByTimeAndOrderId(LocalDateTime startTime, LocalDateTime endTime, Integer orderId);
+
+    Order findByOrderId(Integer orderId);
 }

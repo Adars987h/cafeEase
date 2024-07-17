@@ -10,4 +10,7 @@ public interface OrderService {
     Order placeOrder();
 
     List<Order> searchOrders(OrderSearchRequest orderSearchRequest);
+
+    String cancelOrder(Integer orderId);
+
 }

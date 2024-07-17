@@ -1,6 +1,7 @@
 package com.inn.cafe.restImpl;
 
 import com.inn.cafe.constants.CafeConstants;
+import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.UserRest;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.CafeUtils;
@@ -21,83 +22,78 @@ public class UserRestImpl implements UserRest {
 
     @Autowired
     UserService userService;
+
     @Override
-    public ResponseEntity<String> signUp(Map<String, String> requestMap) {
-        try{
-            return userService.signUp(requestMap);
-        }catch(Exception ex){
+    public ResponseEntity<Response> signUp(Map<String, String> requestMap) {
+        try {
+            String result = userService.signUp(requestMap);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
+        } catch (Exception ex) {
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//          ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<String> login(Map<String,String> requestMap) {
-        try{
-            return userService.login(requestMap);
-        }catch (Exception ex){
+    public ResponseEntity<Response> login(Map<String, String> requestMap) {
+        try {
+            String result = userService.login(requestMap);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
+        } catch (Exception ex) {
             log.error(ex.getMessage());
             ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<UserWrapper>> getAllUser() {
-        try{
-            return userService.getAllUser();
+    public ResponseEntity<Response> getAllUser() {
+        try {
+            List<UserWrapper> result = userService.getAllUser();
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
 
-        }catch (Exception ex){
+        } catch (Exception ex) {
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
+            throw ex;
         }
-        return new ResponseEntity<List<UserWrapper>>(new ArrayList<>(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<String> update(Map<String, String> requestMap) {
-        try{
-            return userService.update(requestMap);
-        }catch(Exception ex){
+    public ResponseEntity<Response> update(Map<String, String> requestMap) {
+        try {
+            String result = userService.update(requestMap);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
+        } catch (Exception ex) {
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @Override
+    public ResponseEntity<Response> changePassword(Map<String, String> requestMap) {
+        try {
+            String result = userService.changePassword(requestMap);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+//            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     @Override
-    public ResponseEntity<String> checkToken() {
-        try{
-            return userService.checkToken();
-        }catch (Exception ex ){
+    public ResponseEntity<Response> forgotPassword(Map<String, String> requestMap) throws Exception {
+        try {
+            String result = userService.forgotPassword(requestMap);
+            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
+        } catch (Exception ex) {
             log.error(ex.getMessage());
-            ex.printStackTrace();
+//            ex.printStackTrace();
+            throw ex;
         }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
-
-    }
-
-    @Override
-    public ResponseEntity<String> changePassword(Map<String, String> requestMap) {
-        try{
-            return userService.changePassword(requestMap);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-            ex.printStackTrace();
-        }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
-
-    }
-
-    @Override
-    public ResponseEntity<String> forgotPassword(Map<String, String> requestMap) {
-        try{
-            return userService.forgotPassword(requestMap);
-        }catch(Exception ex){
-            log.error(ex.getMessage());
-            ex.printStackTrace();
-        }
-        return CafeUtils.getResponseEntity(CafeConstants.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

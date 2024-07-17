@@ -47,4 +47,17 @@ public class OrderRestImpl implements OrderRest {
 
     }
 
+    @Override
+    public ResponseEntity<Response> cancelOrder(Integer orderId) {
+        try{
+            String result=orderService.cancelOrder(orderId);
+            Response response = new Response(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch(Exception ex){
+            log.error(ex.getMessage());
+
+            return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

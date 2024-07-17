@@ -1,5 +1,6 @@
 package com.inn.cafe.POJO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
@@ -40,6 +41,7 @@ public class User implements Serializable {
     @Column(name="email")
     private String email;
 
+    @JsonIgnore
     @Column(name="password")
     private String password;
 
