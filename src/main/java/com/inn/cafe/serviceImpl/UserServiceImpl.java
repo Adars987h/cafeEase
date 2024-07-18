@@ -219,5 +219,20 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User findByEmail(String email) {
+        try {
+            User user = userDao.findByEmail(email);
+            if (!Objects.isNull(user) && !Strings.isNullOrEmpty(user.getEmail())) {
+                return user;
+            }
+            throw new BadRequestException("No user found with the given Email");
+
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw ex;
+        }
+    }
+
 
 }

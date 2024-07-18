@@ -7,17 +7,21 @@ import com.inn.cafe.POJO.Order;
 import com.inn.cafe.POJO.User;
 import com.inn.cafe.dao.CartDao;
 import com.inn.cafe.dao.OrderDao;
+import com.inn.cafe.dao.ProductDao;
+import com.inn.cafe.dto.OrderItem;
 import com.inn.cafe.dto.OrderSearchRequest;
 import com.inn.cafe.enums.OrderStatus;
 import com.inn.cafe.exceptions.BadRequestException;
 import com.inn.cafe.service.CartService;
 import com.inn.cafe.service.OrderService;
+import com.inn.cafe.wrapper.ProductWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +35,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     CartDao cartDao;
+    
+    @Autowired
+    ProductDao productDao;
 
     @Autowired
     CartService cartService;
@@ -112,6 +119,48 @@ public class OrderServiceImpl implements OrderService {
             }
             throw new BadRequestException("Please enter a Valid Order Id !!!!!");
         }catch (Exception ex){
+            log.error(ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @Override
+    public Order orderByAdmin(User user, List<OrderItem> items) {
+        try{
+            HashMap<Integer, Integer> productIdToQuantityMap = new HashMap<>();
+            List<Integer> productIds = new ArrayList<>();
+            for (OrderItem item : items) {
+                productIds.add(item.getProductId());
+                productIdToQuantityMap.put(item.getProductId(), item.getQuantity());
+            }
+
+            List<ProductWrapper> products = productDao.getProductsWithProductIdIn(productIds);
+
+            float totalPrice=0;
+
+            List<OrderItem> orderedItems = new ArrayList<>();
+            for (ProductWrapper product:products){
+                OrderItem item= new OrderItem();
+                item.setProductId(product.getId());
+                item.setProductName(product.getName());
+                item.setQuantity(productIdToQuantityMap.get(product.getId()));
+                item.setPricePerUnit(product.getPrice());
+                item.setPrice(productIdToQuantityMap.get(product.getId())*product.getPrice());
+
+                orderedItems.add(item);
+
+                totalPrice+=item.getPrice();
+            }
+
+            Order order =new Order();
+            order.setCustomer(user);
+            order.setItems(orderedItems);
+            order.setTotalAmount(totalPrice);
+            order.setOrderDateAndTime(LocalDateTime.now());
+            order.setOrderStatus(OrderStatus.ORDER_PLACED);
+
+            return orderDao.save(order);
+        }catch(Exception ex){
             log.error(ex.getMessage());
             throw ex;
         }

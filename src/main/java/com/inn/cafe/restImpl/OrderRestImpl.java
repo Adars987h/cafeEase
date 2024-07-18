@@ -1,10 +1,13 @@
 package com.inn.cafe.restImpl;
 
 import com.inn.cafe.POJO.Order;
+import com.inn.cafe.POJO.User;
+import com.inn.cafe.dto.OrderItem;
 import com.inn.cafe.dto.OrderSearchRequest;
 import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.OrderRest;
 import com.inn.cafe.service.OrderService;
+import com.inn.cafe.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,9 @@ public class OrderRestImpl implements OrderRest {
 
     @Autowired
     OrderService orderService;
+
+    @Autowired
+    UserService userService;
 
     @Override
     public ResponseEntity<Response> placeOrder() {
@@ -57,6 +63,22 @@ public class OrderRestImpl implements OrderRest {
             log.error(ex.getMessage());
 
             return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<Response> orderByAdmin(String emailId, List<OrderItem> items) {
+        try{
+            User user= userService.findByEmail(emailId);
+            
+            Order order= orderService.orderByAdmin(user,items);
+            Response response = new Response(order);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+            
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+
+            return  new ResponseEntity<>(new Response(ex.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

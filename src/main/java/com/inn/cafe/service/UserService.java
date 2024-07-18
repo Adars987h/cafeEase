@@ -1,5 +1,6 @@
 package com.inn.cafe.service;
 
+import com.inn.cafe.POJO.User;
 import com.inn.cafe.wrapper.UserWrapper;
 import jakarta.mail.MessagingException;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ public interface UserService {
     String changePassword(Map<String, String> requestMap);
 
     String forgotPassword(Map<String, String> requestMap) throws Exception;
+
+    User findByEmail(String email);
 
 
 
