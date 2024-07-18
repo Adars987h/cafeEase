@@ -8,5 +8,5 @@ public class CafeConstants {
 
     public static final String UNAUTHORISED_ACCESS ="Access Denied - User is not authorized";
 
-    public static final String STORE_LOCATION="C:\\Users\\adars\\Desktop\\spring\\com.inn.cafe\\Stored-files";
+    public static final String STORE_LOCATION="src/main/resources/bills/";
 }

@@ -1,9 +1,15 @@
 package com.inn.cafe.service;
 
-import org.springframework.http.ResponseEntity;
+import com.inn.cafe.POJO.Order;
+import com.inn.cafe.dto.BillResponse;
+import com.inn.cafe.wrapper.CustomerWrapper;
 
-import java.util.Map;
+import java.io.IOException;
 
 public interface BillService {
-    ResponseEntity<String> generateReport(Map<String, Object> requestMap);
+    Boolean generateBill(CustomerWrapper customer, Order order);
+
+    BillResponse getBillStream(Integer orderId) throws IOException;
+
+    void deleteBill(Integer orderId) throws IOException;
 }
