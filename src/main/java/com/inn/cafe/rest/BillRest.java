@@ -12,12 +12,6 @@ import java.io.IOException;
 @RequestMapping("/bill")
 public interface BillRest {
 
-//    @GetMapping("/generateBill/{id}")
-//    ResponseEntity<String> generateBill(@PathVariable Integer id);
-//
-//    @GetMapping("/downloadPdf/{id}")
-//    public ResponseEntity<InputStreamResource> downloadPdf(@PathVariable Integer id);
-
     @GetMapping("/{orderId}")
     ResponseEntity<InputStreamResource> downloadBill(@PathVariable Integer orderId) throws IOException;
 

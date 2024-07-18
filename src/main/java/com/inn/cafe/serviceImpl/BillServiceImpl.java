@@ -27,12 +27,6 @@ import java.nio.file.Paths;
 public class BillServiceImpl implements BillService {
 
     @Autowired
-    JwtFilter jwtFilter;
-
-    @Autowired
-    BillDao billDao;
-
-    @Autowired
     BillCreatorUtil billCreatorUtil;
 
     @SneakyThrows

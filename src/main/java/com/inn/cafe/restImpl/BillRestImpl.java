@@ -40,28 +40,6 @@ public class BillRestImpl implements BillRest {
     @Autowired
     JwtFilter jwtFilter;
 
-//    @Override
-//    public ResponseEntity<String> generateBill(Integer id) {
-//        try{
-//            User user = customerUserDetailsService.getUserDetail();
-//            List<Order> orders;
-//            if (jwtFilter.isUser())
-//                orders = orderService.searchOrders(OrderSearchRequest.builder().customer(user).orderId(id).build());
-//            else if (jwtFilter.isAdmin())
-//                orders = orderService.searchOrders(OrderSearchRequest.builder().orderId(id).build());
-//            else
-//                throw new BadRequestException("Invalid user Role");
-//
-//            if (CollectionUtils.isEmpty(orders)){
-//                throw new BadRequestException("Please enter a Valid Order Id !!!!!");
-//            }
-//            return billService.generateBill(new CustomerWrapper(user), orders.get(0));
-//        }catch(Exception ex){
-//            ex.printStackTrace();
-//            throw ex;
-//        }
-//    }
-
     @Override
     public ResponseEntity<InputStreamResource> downloadBill(Integer orderId) throws IOException {
         try{
