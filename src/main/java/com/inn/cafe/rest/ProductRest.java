@@ -13,7 +13,7 @@ public interface ProductRest {
     @PostMapping("/add")
     ResponseEntity<Response> addNewProduct(@RequestBody Map<String,String> requestMap);
 
-    @GetMapping("/get")
+    @GetMapping("/admin")
     ResponseEntity<Response> getAllProduct();
 
     @PostMapping("/update")
@@ -30,5 +30,8 @@ public interface ProductRest {
 
     @GetMapping("/getById/{id}")
     ResponseEntity<Response> getProductById(@PathVariable Integer id);
+
+    @GetMapping
+    ResponseEntity<Response> getProducts(@RequestParam(required = false) String search);
 
 }

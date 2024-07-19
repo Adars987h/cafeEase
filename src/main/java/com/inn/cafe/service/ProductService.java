@@ -2,7 +2,6 @@ package com.inn.cafe.service;
 
 import com.inn.cafe.POJO.Product;
 import com.inn.cafe.wrapper.ProductWrapper;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -22,4 +21,6 @@ public interface ProductService {
     List<ProductWrapper> getByCategory(int id);
 
     ProductWrapper getProductById(int id);
+
+    List<Product> getProductsBasedOnFilter(String categoryName, String productName, String status);
 }

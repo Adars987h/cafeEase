@@ -1,10 +1,9 @@
 package com.inn.cafe.restImpl;
 
-import com.inn.cafe.constants.CafeConstants;
+import com.inn.cafe.POJO.Product;
 import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.ProductRest;
 import com.inn.cafe.service.ProductService;
-import com.inn.cafe.utils.CafeUtils;
 import com.inn.cafe.wrapper.ProductWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -104,6 +102,18 @@ public class ProductRestImpl implements ProductRest {
         }catch(Exception ex){
             log.error(ex.getMessage());
 //            ex.printStackTrace();
+            throw ex;
+        }
+    }
+
+    @Override
+    public ResponseEntity<Response> getProducts(String search) {
+        try {
+            List<Product> products = productService.getProductsBasedOnFilter(search, search, "true");
+            List<ProductWrapper> productWrappers = products.stream().map(ProductWrapper::new).toList();
+            return new ResponseEntity<>(new Response(productWrappers), HttpStatus.OK);
+        }catch (Exception ex){
+            log.error(ex.getMessage());
             throw ex;
         }
     }

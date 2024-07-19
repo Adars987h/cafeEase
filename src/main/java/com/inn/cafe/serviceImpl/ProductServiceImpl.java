@@ -12,6 +12,7 @@ import com.inn.cafe.wrapper.ProductWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductWrapper> getAllProduct() {
         try{
-            return productDao.getAllProduct();
+            if (jwtFilter.isAdmin())
+                return productDao.getAllProduct();
+            throw new UnauthorizedException("You don't have required permissions to perform this operation");
         }catch (Exception ex){
             log.error(ex.getMessage());
             throw ex;
@@ -146,6 +149,18 @@ public class ProductServiceImpl implements ProductService {
             return productDao.getProductById(id);
         }catch (Exception ex){
 //            ex.printStackTrace();
+            throw ex;
+        }
+    }
+
+    @Override
+    public List<Product> getProductsBasedOnFilter(String categoryName, String productName, String status) {
+        try{
+            categoryName = !StringUtils.isEmpty(categoryName)? categoryName : "";
+            productName = !StringUtils.isEmpty(productName)? productName : "";
+            return productDao.getProductBasedOnFilter(categoryName, productName, status);
+        }catch (Exception ex){
+            log.error(ex.getMessage());
             throw ex;
         }
     }
