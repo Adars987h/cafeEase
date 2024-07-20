@@ -137,8 +137,8 @@ public class BillCreatorUtil {
     public void createItemsTable(Order order) {
         Table itmsTable=new Table(itemTableWidth);
         float totalSum=order.getTotalAmount();
+        int totalQuantity = order.getTotalQuantity();
         int i =1;
-        int totalQuantity = 0;
         for (OrderItem item:order.getItems())
         {
             itmsTable.addCell(new Cell().add(String.valueOf(i)).setTextAlignment(TextAlignment.LEFT).setBorder(Border.NO_BORDER));
@@ -147,7 +147,6 @@ public class BillCreatorUtil {
             itmsTable.addCell(new Cell().add(String.valueOf(item.getQuantity())).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER));
             itmsTable.addCell(new Cell().add(String.valueOf(item.getPrice())).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER)).setMarginRight(15f);
             i++;
-            totalQuantity += item.getQuantity();
         }
 
         document.add(itmsTable.setMarginBottom(20f));

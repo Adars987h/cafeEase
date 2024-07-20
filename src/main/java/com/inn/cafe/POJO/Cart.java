@@ -39,6 +39,9 @@ public class Cart {
     @Column(name = "totalamount")
     private float totalAmount;
 
+    @Column(name = "totalquantity")
+    private int totalQuantity;
+
     @JsonIgnore
     @Column(name = "items", columnDefinition = "json")
     private String itemsJson;

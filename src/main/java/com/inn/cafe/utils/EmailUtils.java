@@ -3,15 +3,18 @@ package com.inn.cafe.utils;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class EmailUtils {
 
     @Autowired
@@ -28,6 +31,23 @@ public class EmailUtils {
         }
         emailsender.send(message);
 
+    }
+
+    @Async
+    public void sendHtmlMessage(String to, String subject, String htmlBody, List<String> ccList) throws MessagingException {
+        MimeMessage message = emailsender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, "UTF-8");
+
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlBody, true); // true indicates HTML
+
+        if (ccList != null && !ccList.isEmpty()) {
+            helper.setCc(ccList.toArray(new String[0]));
+        }
+
+        emailsender.send(message);
+        log.info("Sent Mail to customer");
     }
 
     private String[] getCcArray(List<String> ccList){

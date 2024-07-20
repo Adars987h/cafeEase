@@ -83,6 +83,7 @@ public class CartServiceImpl implements CartService {
 
 
         float totalPrice = 0;
+        int totalQuantity = 0;
 
         int currSize = currentCartItems.size();
         for (int i = 0; i < currSize; i++) {
@@ -98,9 +99,11 @@ public class CartServiceImpl implements CartService {
                     currSize--;
                 } else {
                     totalPrice += item.getPrice();
+                    totalQuantity += item.getQuantity();
                 }
             } else {
                 totalPrice += item.getPrice();
+                totalQuantity += item.getQuantity();
             }
         }
 
@@ -115,12 +118,14 @@ public class CartServiceImpl implements CartService {
 
                 currentCartItems.add(item);
                 totalPrice += item.getPrice();
+                totalQuantity += item.getQuantity();
             }
         }
 
         Cart cart = new Cart();
         cart.setItems(currentCartItems);
         cart.setTotalAmount(totalPrice);
+        cart.setTotalQuantity(totalQuantity);
 
         return cart;
 

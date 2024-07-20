@@ -60,6 +60,7 @@ public class OrderServiceImpl implements OrderService {
             order.setCustomer(user);
             order.setItems(cart.getItems());
             order.setTotalAmount(cart.getTotalAmount());
+            order.setTotalQuantity(cart.getTotalQuantity());
             order.setOrderDateAndTime(LocalDateTime.now());
             order.setOrderStatus(OrderStatus.ORDER_PLACED);
 
@@ -137,6 +138,7 @@ public class OrderServiceImpl implements OrderService {
             List<ProductWrapper> products = productDao.getProductsWithProductIdIn(productIds);
 
             float totalPrice=0;
+            int totalQuantity =0;
 
             List<OrderItem> orderedItems = new ArrayList<>();
             for (ProductWrapper product:products){
@@ -149,6 +151,7 @@ public class OrderServiceImpl implements OrderService {
 
                 orderedItems.add(item);
 
+                totalQuantity += item.getQuantity();
                 totalPrice+=item.getPrice();
             }
 
@@ -156,6 +159,7 @@ public class OrderServiceImpl implements OrderService {
             order.setCustomer(user);
             order.setItems(orderedItems);
             order.setTotalAmount(totalPrice);
+            order.setTotalQuantity(totalQuantity);
             order.setOrderDateAndTime(LocalDateTime.now());
             order.setOrderStatus(OrderStatus.ORDER_PLACED);
 
