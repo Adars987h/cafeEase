@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -88,9 +89,12 @@ public class UserServiceImpl implements UserService {
                     throw new BadRequestException("Wait for Admin Approval !!!!!!!");
                 }
             } else {
-                throw new BadRequestException("Wrong Email or Password !!!!!");
+                throw new BadCredentialsException("Wrong Email or Password !!!!!");
             }
         } catch (Exception ex) {
+            if(ex instanceof BadCredentialsException){
+                throw new BadCredentialsException("Wrong Email or Password !!!!!");
+            }
             log.error(ex.getMessage());
             throw ex;
         }
