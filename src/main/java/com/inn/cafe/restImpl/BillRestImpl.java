@@ -62,7 +62,7 @@ public class BillRestImpl implements BillRest {
                     new Thread(() -> {
                         try {
                             // Sleep to ensure the file is no longer in use
-                            Thread.sleep(10000);
+                            Thread.sleep(30000);
                             billService.deleteBill(orderId);
                         } catch (IOException | InterruptedException e) {
                             e.printStackTrace();

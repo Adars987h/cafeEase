@@ -7,6 +7,7 @@ import com.inn.cafe.dao.CartDao;
 import com.inn.cafe.dao.ProductDao;
 import com.inn.cafe.dto.OrderItem;
 import com.inn.cafe.service.CartService;
+import com.inn.cafe.service.UserService;
 import com.inn.cafe.wrapper.ProductWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     CustomerUserDetailsService customerUserDetailsService;
+
+    @Autowired
+    UserService userService;
 
     @Override
     public Cart addOrUpdateItem(List<OrderItem> items) {
@@ -62,6 +66,25 @@ public class CartServiceImpl implements CartService {
             throw ex;
         }
 
+    }
+
+    @Override
+    public Cart getCartByUserEmail(String emailId) {
+        try {
+            User user= userService.findByEmail(emailId);
+            return cartDao.findByCustomerId(user);
+        } catch (Exception ex) {
+            throw ex;
+        }
+    }
+
+    @Override
+    public Cart getCartForUser(User userDetail) {
+        try {
+            return cartDao.findByCustomerId(userDetail);
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     private Cart setCartItemsAndTotalPrice(List<OrderItem> currentCartItems, List<OrderItem> itemsToAdd) {
