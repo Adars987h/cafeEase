@@ -47,7 +47,8 @@ public class CartServiceImpl implements CartService {
             }
 
             updatedCart.setCustomerId(user);
-            return cartDao.save(updatedCart);
+            cartDao.save(updatedCart);
+            return cartDao.findByCustomerId(user);
 
         } catch (Exception ex) {
             throw ex;
