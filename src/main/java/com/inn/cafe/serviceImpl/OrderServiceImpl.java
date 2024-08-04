@@ -86,6 +86,7 @@ public class OrderServiceImpl implements OrderService {
                 }
 
                 orderSearchRequest.setCustomer(currentUser);
+                customerFromRequest=orderSearchRequest.getCustomer();
             }
             List<Order> orders = new ArrayList<>();
             if (Objects.isNull(orderSearchRequest.getOrderId())){
