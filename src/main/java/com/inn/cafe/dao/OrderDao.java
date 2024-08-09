@@ -17,10 +17,10 @@ public interface OrderDao extends JpaRepository<Order, Integer> {
     @Query("SELECT o FROM Order o WHERE ((:#{#customer.name} IS NULL OR o.customer.name like %:#{#customer.name}%) AND (:#{#customer.email} IS NULL OR o.customer.email = :#{#customer.email}) AND (:#{#customer.contactNumber} IS NULL OR o.customer.contactNumber = :#{#customer.contactNumber}) AND (:#{#customer.id} IS NULL OR o.customer.id = :#{#customer.id})) AND o.orderDateAndTime BETWEEN :startTime AND :endTime order by o.orderDateAndTime desc")
     List<Order> findByUserAndTime(User customer, LocalDateTime startTime, LocalDateTime endTime);
 
-    @Query("SELECT o FROM Order o WHERE ((:#{#customer.name} IS NULL OR o.customer.name like %:#{#customer.name}%) AND (:#{#customer.email} IS NULL OR o.customer.email = :#{#customer.email}) AND (:#{#customer.contactNumber} IS NULL OR o.customer.contactNumber = :#{#customer.contactNumber}) AND (:#{#customer.id} IS NULL OR o.customer.id = :#{#customer.id})) AND o.orderDateAndTime BETWEEN :startTime AND :endTime AND o.orderId = :orderId order by o.orderDateAndTime desc")
+    @Query("SELECT o FROM Order o WHERE ((:#{#customer.name} IS NULL OR o.customer.name like %:#{#customer.name}%) AND (:#{#customer.email} IS NULL OR o.customer.email = :#{#customer.email}) AND (:#{#customer.contactNumber} IS NULL OR o.customer.contactNumber = :#{#customer.contactNumber}) AND (:#{#customer.id} IS NULL OR o.customer.id = :#{#customer.id})) AND o.orderDateAndTime BETWEEN :startTime AND :endTime AND (:orderId IS NULL OR STR(o.orderId) LIKE %:orderId%) order by o.orderDateAndTime desc")
     List<Order> findByUserTimeAndOrderId(User customer, LocalDateTime startTime, LocalDateTime endTime, Integer orderId);
 
-    @Query("SELECT o FROM Order o WHERE o.orderDateAndTime BETWEEN :startTime AND :endTime AND o.orderId = :orderId order by o.orderDateAndTime desc")
+    @Query("SELECT o FROM Order o WHERE o.orderDateAndTime BETWEEN :startTime AND :endTime AND (:orderId IS NULL OR STR(o.orderId) LIKE %:orderId%) order by o.orderDateAndTime desc")
     List<Order> findByTimeAndOrderId(LocalDateTime startTime, LocalDateTime endTime, Integer orderId);
 
     Order findByOrderId(Integer orderId);
