@@ -29,4 +29,7 @@ public class Category implements Serializable {
     @Column(name="name")
     private String name;
 
+    @Lob
+    @Column(name="image", nullable = true, columnDefinition="LONGBLOB")
+    private byte[] image;
 }

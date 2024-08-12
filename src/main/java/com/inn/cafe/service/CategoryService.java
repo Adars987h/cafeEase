@@ -1,16 +1,15 @@
 package com.inn.cafe.service;
 
 import com.inn.cafe.POJO.Category;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 public interface CategoryService {
 
-    Category addNewCategory(Map<String,String> requestMap);
+    Category addNewCategory(String name, MultipartFile image);
 
     List<Category> getAllCategories(String filterValue);
 
-    Category updateCategory(Map<String,String> requestMap);
+    Category updateCategory(int id, String name, MultipartFile image);
 }
