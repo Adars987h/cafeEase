@@ -8,5 +8,5 @@ public class CafeConstants {
 
     public static final String UNAUTHORISED_ACCESS ="Access Denied - User is not authorized";
 
-    public static final String STORE_LOCATION="src/main/resources/bills/";
+    public static final String STORE_LOCATION="/tmp/";
 }

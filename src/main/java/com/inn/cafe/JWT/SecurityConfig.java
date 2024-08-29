@@ -69,7 +69,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000/","https://noted-phalanx-433318-g9.as.r.appspot.com")); // Add your frontend origin here
+        configuration.setAllowedOrigins(Arrays.asList("https://cafeease.vercel.app/", "http://localhost:3000/")); // Add your frontend origin here
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Specify the methods
         configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers
         configuration.setAllowCredentials(true); // If you need to send credentials (e.g., cookies)
