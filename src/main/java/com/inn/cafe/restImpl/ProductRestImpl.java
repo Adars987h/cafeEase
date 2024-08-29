@@ -4,6 +4,7 @@ import com.inn.cafe.POJO.Product;
 import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.ProductRest;
 import com.inn.cafe.service.ProductService;
+import com.inn.cafe.service.SqlExecService;
 import com.inn.cafe.wrapper.ProductWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class ProductRestImpl implements ProductRest {
 
    @Autowired
     ProductService productService;
+
+   @Autowired
+    SqlExecService sqlExecService;
 
     @Override
     public ResponseEntity<Response> addNewProduct(Map<String, String> requestMap) {
@@ -113,6 +117,20 @@ public class ProductRestImpl implements ProductRest {
             List<ProductWrapper> productWrappers = products.stream().map(ProductWrapper::new).toList();
             return new ResponseEntity<>(new Response(productWrappers), HttpStatus.OK);
         }catch (Exception ex){
+            log.error(ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @Override
+    public ResponseEntity<Response> addProductsAndCategoriesFromSql() throws Exception {
+        try {
+            String file = "categories.sql";
+            sqlExecService.executeSqlFromFile(file);
+            file = "product.sql";
+            sqlExecService.executeSqlFromFile(file);
+            return new ResponseEntity<>(new Response("Successfully Added products"), HttpStatus.OK);
+        } catch (Exception ex) {
             log.error(ex.getMessage());
             throw ex;
         }

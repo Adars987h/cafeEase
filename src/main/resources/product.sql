@@ -1,0 +1,35 @@
+INSERT INTO product (category_fk,description,name,price,status)
+VALUES
+  (1, 'Crispy, golden perfection with a soft center, served with classic chutney and sambar!', 'Plain Dosa', 49, 'true'),
+  (1, 'Crispy dosa wrapped around spiced potato goodness, served with chutney and sambar!', 'Masala Dosa', 59, 'true'),
+  (1, 'Cheese Dosa: Crispy dosa loaded with gooey melted cheese, paired with chutney and sambar!', 'Cheese Dosa', 79, 'true'),
+  (1, 'Crispy dosa filled with flavorful paneer, served with chutney and sambar!', 'Paneer Dosa', 79, 'true'),
+  (1, 'A crispy dosa topped with cheesy pizza flavors, served with chutney and sambar!', 'Pizza Dosa', 89, 'true'),
+  (2, 'Creamy, rich, and indulgent, with perfectly cooked pasta in a velvety white sauce!', 'White Sauce Pasta', 69, 'true'),
+  (2, 'Tangy and flavorful pasta tossed in a rich tomato-based sauce, bursting with bold flavors!', 'Red Sauce Pasta', 69, 'true'),
+  (2, 'Fiery and bold, with pasta simmered in a spicy tomato sauce for a kick of heat!', 'Arrabbiata Pasta', 69, 'true'),
+  (3, 'Stir-fried noodles with crisp vegetables and savory sauce, delivering a perfect balance of flavors and texture!', 'Chowmein', 49, 'true'),
+  (3, 'Wok-tossed noodles with vibrant vegetables and a savory blend of spices, offering a delightful burst of flavor in every bite!', 'Hakka Noodles', 59, 'true'),
+  (3, 'Comforting and quick, with perfectly spiced noodles in a savory broth—simple, satisfying, and always a favorite!', 'Plain Maggi', 39, 'true'),
+  (3, 'Classic noodles with a creamy, cheesy twist, delivering extra comfort and flavor in every bite!', 'Cheese Maggi', 59, 'true'),
+  (3, 'Savory noodles packed with a colorful mix of fresh vegetables, offering a delicious and wholesome twist!', 'Veggie Maggi', 59, 'true'),
+  (3, 'Rich and indulgent, with noodles coated in a luscious layer of buttery goodness for a truly comforting experience!', 'Veggie Maggi', 59, 'true'),
+  (4, 'Fresh and tangy tomatoes layered on a crispy crust with melted cheese, offering a burst of vibrant flavor in every bite!', 'Tomato Pizza', 59, 'true'),
+  (4, 'Caramelized onions atop a crispy crust with melted cheese, delivering a sweet and savory flavor combination that is irresistible!', 'Onion Pizza', 69, 'true'),
+  (4, 'A delightful blend of creamy paneer and crisp capsicum on a cheesy, crispy crust, offering a burst of flavor with every slice!', 'Paneer Capsicum Pizza', 109, 'true'),
+  (4, 'Savory noodles packed with a colorful mix of fresh vegetables, offering a delicious and wholesome twist!', 'Veggie MAggi', 59, 'true'),
+  (5, 'A refreshing medley of crisp greens and vibrant vegetables, tossed with your choice of dressing for a light and healthy delight!', 'Veg Pizza', 39, 'true'),
+  (6, 'Creamy, indulgent, and rich with velvety chocolate goodness, blended to perfection for a sweet and satisfying treat!', 'Chocolate Shake', 69, 'true'),
+  (6, 'Smooth and refreshing, with the sweet, tropical flavor of ripe mangoes blended into a creamy, delicious treat!', 'Mango Shake', 69, 'true'),
+  (6, 'Creamy and decadent, with chunks of Oreo cookies blended into a rich, indulgent shake that is simply irresistible!', 'Oreo Shake', 69, 'true'),
+  (6, 'Smooth and creamy, with ripe bananas blended into a sweet and satisfying shake that is naturally delicious!', 'Banana Shake', 69, 'true'),
+  (7, 'A classic, soothing brew with a delicate balance of rich flavor and aromatic warmth, perfect for any time of day!', 'Plain Tea', 9, 'true'),
+  (7, 'Invigorating and aromatic, with a bold ginger kick that warms and soothes, perfect for a refreshing boost!', 'Ginger Tea', 19, 'true'),
+  (7, 'Bright and zesty, with a tangy twist of lemon that adds a refreshing zing to your cup of tea!', 'Lemon Tea', 19, 'true'),
+  (7, 'A spiced and aromatic blend of tea infused with a mix of fragrant spices, delivering a warm and comforting cup of bold flavor!', 'Masala Tea', 19, 'true'),
+  (8, 'Crispy paneer cubes tossed in a spicy, tangy sauce with a perfect kick of heat and a burst of flavor!', 'Chilli Paneer', 109, 'true'),
+  (8, 'Savory mushrooms cooked in a rich, aromatic gravy with a blend of spices, offering a comforting and flavorful experience!', 'Mushroom Handi', 109, 'true'),
+  (8, 'Creamy and rich paneer simmered in a luscious, buttery tomato-based gravy with a blend of aromatic spices, offering a luxurious and satisfying dish!', 'Butter Paneer Masala', 109, 'true');
+
+
+

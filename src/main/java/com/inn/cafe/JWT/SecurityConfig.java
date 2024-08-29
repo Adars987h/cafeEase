@@ -45,7 +45,7 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**")
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/user/login", "/user/signup", "/user/forgotPassword").permitAll()
+                        .requestMatchers("/user/login", "/user/signup", "/user/forgotPassword","/hello").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

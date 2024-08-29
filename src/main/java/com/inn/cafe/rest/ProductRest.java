@@ -34,4 +34,7 @@ public interface ProductRest {
     @GetMapping
     ResponseEntity<Response> getProducts(@RequestParam(required = false) String search);
 
+    @PostMapping("/bulk")
+    ResponseEntity<Response> addProductsAndCategoriesFromSql() throws Exception;
+
 }
