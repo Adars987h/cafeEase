@@ -12,6 +12,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
@@ -19,7 +20,7 @@ import java.util.List;
 @DynamicUpdate
 @DynamicInsert
 @Table(name = "cart")
-public class Cart {
+public class Cart implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

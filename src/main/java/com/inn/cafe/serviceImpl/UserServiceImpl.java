@@ -10,14 +10,10 @@ import com.inn.cafe.dao.UserDao;
 import com.inn.cafe.exceptions.BadRequestException;
 import com.inn.cafe.exceptions.UnauthorizedException;
 import com.inn.cafe.service.UserService;
-import com.inn.cafe.utils.CafeUtils;
 import com.inn.cafe.utils.EmailUtils;
 import com.inn.cafe.wrapper.UserWrapper;
-import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,7 +21,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -155,7 +154,8 @@ public class UserServiceImpl implements UserService {
         user.setContactNumber(requestMap.get("contactNumber"));
         user.setEmail(requestMap.get("email"));
         user.setPassword(requestMap.get("password"));
-        user.setStatus("false");
+//        user.setStatus("false");
+        user.setStatus("true");
         user.setRole("user");
         return user;
 
