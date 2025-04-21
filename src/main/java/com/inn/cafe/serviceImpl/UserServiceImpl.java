@@ -49,6 +49,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     EmailUtils emailUtils;
 
+
     @Override
     public String signUp(Map<String, String> requestMap) {
         log.info("Inside signup {}", requestMap);
