@@ -91,12 +91,18 @@ public class OrderRestImpl implements OrderRest {
         }
     }
 
-    private void sendOrderDetailsToUser(Order order) throws MessagingException {
+    private void sendOrderDetailsToUser(Order order) {
+        // Best-effort: the order is already persisted by the time we get here, so a
+        // mail failure must not fail the request. Several hosting platforms (Render
+        // among them) block outbound SMTP entirely, which would otherwise turn every
+        // successfully placed order into a 500 for the customer.
         String emailTo = order.getCustomer().getEmail();
-        String subject = "Order Placed - CafeEase";
-//        System.out.println(order);
-//        System.out.println(getOrderHtml(order));
-        emailUtils.sendHtmlMessage(emailTo, subject, getOrderHtml(order), null);
+        try {
+            emailUtils.sendHtmlMessage(emailTo, "Order Placed - CafeEase", getOrderHtml(order), null);
+        } catch (Exception ex) {
+            log.error("Order placed, but the confirmation email to {} could not be sent: {}",
+                    emailTo, ex.getMessage());
+        }
     }
 
     private String getOrderHtml(Order order) {
