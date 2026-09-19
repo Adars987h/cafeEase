@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -51,6 +52,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/user/login", "/user/signup", "/user/forgotPassword","/hello").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
+                        // Read-only public menu browsing for the landing page, same as any
+                        // restaurant site showing its menu before you sign in. Write
+                        // operations on these same paths (POST/PUT/DELETE) are untouched
+                        // and still require admin auth.
+                        .requestMatchers(HttpMethod.GET, "/category", "/product", "/orders/top-seller").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

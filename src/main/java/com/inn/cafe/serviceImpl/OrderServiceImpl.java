@@ -10,6 +10,7 @@ import com.inn.cafe.dao.OrderDao;
 import com.inn.cafe.dao.ProductDao;
 import com.inn.cafe.dto.OrderItem;
 import com.inn.cafe.dto.OrderSearchRequest;
+import com.inn.cafe.dto.TopSellerResponse;
 import com.inn.cafe.enums.OrderStatus;
 import com.inn.cafe.exceptions.BadRequestException;
 import com.inn.cafe.service.CartService;
@@ -21,8 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -166,6 +169,40 @@ public class OrderServiceImpl implements OrderService {
 
             return orderDao.save(order);
         }catch(Exception ex){
+            log.error(ex.getMessage());
+            throw ex;
+        }
+    }
+
+    @Override
+    public TopSellerResponse getTopSellerToday() {
+        try {
+            LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+            LocalDateTime endOfDay = startOfDay.plusDays(1);
+            List<Order> todaysOrders = orderDao.findByTimeAndOrderId(startOfDay, endOfDay, null);
+
+            // Items are stored as a JSON blob per order (see Order.itemsJson), not a
+            // normalised join table, so there is no SQL GROUP BY to reach for here --
+            // aggregate the already-fetched orders in memory. Fine at this catalogue
+            // and order-volume scale; would need a real aggregate query if either grew
+            // substantially.
+            Map<Integer, TopSellerResponse> totals = new HashMap<>();
+            for (Order order : todaysOrders) {
+                for (OrderItem item : order.getItems()) {
+                    TopSellerResponse running = totals.get(item.getProductId());
+                    if (running == null) {
+                        totals.put(item.getProductId(), new TopSellerResponse(
+                                item.getProductId(), item.getProductName(), item.getPricePerUnit(), item.getQuantity()));
+                    } else {
+                        running.setQuantitySold(running.getQuantitySold() + item.getQuantity());
+                    }
+                }
+            }
+
+            return totals.values().stream()
+                    .max(Comparator.comparingInt(TopSellerResponse::getQuantitySold))
+                    .orElse(null);
+        } catch (Exception ex) {
             log.error(ex.getMessage());
             throw ex;
         }

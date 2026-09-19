@@ -12,6 +12,11 @@ import java.util.List;
 @RequestMapping(path = "/orders")
 public interface OrderRest {
 
+    // Public, aggregate-only (product name/price/quantity, no customer data) --
+    // powers the "today's most ordered" claim on the public landing page.
+    @GetMapping("/top-seller")
+    ResponseEntity<Response> getTopSellerToday();
+
     @PostMapping
     ResponseEntity<Response> placeOrder();
 

@@ -6,6 +6,7 @@ import com.inn.cafe.constants.BillConstants;
 import com.inn.cafe.dto.OrderItem;
 import com.inn.cafe.dto.OrderSearchRequest;
 import com.inn.cafe.dto.Response;
+import com.inn.cafe.dto.TopSellerResponse;
 import com.inn.cafe.rest.OrderRest;
 import com.inn.cafe.service.OrderService;
 import com.inn.cafe.service.UserService;
@@ -33,6 +34,17 @@ public class OrderRestImpl implements OrderRest {
 
     @Autowired
     EmailUtils emailUtils;
+
+    @Override
+    public ResponseEntity<Response> getTopSellerToday() {
+        try {
+            TopSellerResponse topSeller = orderService.getTopSellerToday();
+            return new ResponseEntity<>(new Response(topSeller), HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     @Override
     public ResponseEntity<Response> placeOrder() {
