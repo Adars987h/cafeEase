@@ -1,0 +1,25 @@
+name: Keep Render backend warm
+
+# Render's free tier spins the service down after 15 minutes of no traffic,
+# and the next request pays a ~150s cold start (the whole reason
+# ColdStartNotice.js exists on the frontend). Pinging the health endpoint
+# every 10 minutes keeps it from ever going to sleep in the first place.
+#
+# Runs on GitHub's schedule, independent of any local machine being on --
+# unlike a desktop-app-based scheduled task, this keeps working even if
+# nobody's laptop is open.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          curl -sS -o /dev/null -w "status: %{http_code}\n" \
+            --max-time 170 \
+            https://cafeease-l0zp.onrender.com/actuator/health
