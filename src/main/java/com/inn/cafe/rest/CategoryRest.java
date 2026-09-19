@@ -18,4 +18,7 @@ public interface CategoryRest {
     @PutMapping("/{id}")
     ResponseEntity<Response> updateCategory(@PathVariable int id, @RequestParam String name, @RequestParam(required = false) MultipartFile image);
 
+    @DeleteMapping("/{id}")
+    ResponseEntity<Response> deleteCategory(@PathVariable int id);
+
 }

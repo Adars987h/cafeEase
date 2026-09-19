@@ -5,6 +5,7 @@ import com.inn.cafe.JWT.JwtFilter;
 import com.inn.cafe.POJO.Category;
 import com.inn.cafe.constants.CafeConstants;
 import com.inn.cafe.dao.CategoryDao;
+import com.inn.cafe.dao.ProductDao;
 import com.inn.cafe.exceptions.BadRequestException;
 import com.inn.cafe.exceptions.ImageParsingException;
 import com.inn.cafe.exceptions.UnauthorizedException;
@@ -25,6 +26,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     CategoryDao categoryDao;
+
+    @Autowired
+    ProductDao productDao;
 
     @Autowired
     JwtFilter jwtFilter;
@@ -89,6 +93,31 @@ public class CategoryServiceImpl implements CategoryService {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            throw ex;
+        }
+    }
+
+    @Override
+    public void deleteCategory(int id) {
+        try {
+            if (!jwtFilter.isAdmin()) {
+                throw new UnauthorizedException(CafeConstants.UNAUTHORISED_ACCESS);
+            }
+            Optional<Category> optional = categoryDao.findById(id);
+            if (!optional.isPresent()) {
+                throw new BadRequestException("Category id does not exist");
+            }
+            // product.category_fk is not nullable, so deleting a category that
+            // still has products would fail at the database with a raw FK
+            // violation. Reject it here with a message an admin can act on.
+            long productCount = productDao.countByCategoryId(id);
+            if (productCount > 0) {
+                throw new BadRequestException(
+                        "Cannot delete: " + productCount + " product(s) still belong to this category");
+            }
+            categoryDao.deleteById(id);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
             throw ex;
         }
     }

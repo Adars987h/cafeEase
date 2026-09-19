@@ -58,6 +58,17 @@ public class CategoryRestImpl implements CategoryRest {
         }
     }
 
+    @Override
+    public ResponseEntity<Response> deleteCategory(int id) {
+        try {
+            categoryService.deleteCategory(id);
+            return new ResponseEntity<>(new Response(null, "Category Deleted Successfully"), HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw ex;
+        }
+    }
+
     private CategoryDTO convertToDTO(Category category) {
         CategoryDTO dto = new CategoryDTO();
         dto.setId(category.getId());

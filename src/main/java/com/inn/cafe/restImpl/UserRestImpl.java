@@ -1,5 +1,7 @@
 package com.inn.cafe.restImpl;
 
+import com.inn.cafe.JWT.JwtFilter;
+import com.inn.cafe.POJO.User;
 import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.UserRest;
 import com.inn.cafe.service.UserService;
@@ -19,6 +21,9 @@ public class UserRestImpl implements UserRest {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    JwtFilter jwtFilter;
 
     @Override
     public ResponseEntity<Response> signUp(Map<String, String> requestMap) {
@@ -69,6 +74,17 @@ public class UserRestImpl implements UserRest {
         }
     }
 
+
+    @Override
+    public ResponseEntity<Response> getProfile() {
+        try {
+            User user = userService.findByEmail(jwtFilter.getCurrentUser());
+            return new ResponseEntity<>(new Response(user), HttpStatus.OK);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            throw ex;
+        }
+    }
 
     @Override
     public ResponseEntity<Response> changePassword(Map<String, String> requestMap) {
