@@ -10,6 +10,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 
+import com.inn.cafe.POJO.User;
+import com.inn.cafe.dao.UserDao;
+
 import javax.sql.DataSource;
 
 /**
@@ -29,6 +32,7 @@ public class DataSeeder implements ApplicationRunner {
 
     private final JdbcTemplate jdbc;
     private final DataSource dataSource;
+    private final UserDao userDao;
 
     @Value("${app.seed.admin.email:}")
     private String adminEmail;
@@ -42,9 +46,10 @@ public class DataSeeder implements ApplicationRunner {
     @Value("${app.seed.admin.contact:0000000000}")
     private String adminContact;
 
-    public DataSeeder(JdbcTemplate jdbc, DataSource dataSource) {
+    public DataSeeder(JdbcTemplate jdbc, DataSource dataSource, UserDao userDao) {
         this.jdbc = jdbc;
         this.dataSource = dataSource;
+        this.userDao = userDao;
     }
 
     @Override
@@ -80,15 +85,21 @@ public class DataSeeder implements ApplicationRunner {
             return;
         }
         try {
-            Integer existing = jdbc.queryForObject(
-                    "select count(*) from `user` where email = ?", Integer.class, adminEmail);
-            if (existing != null && existing > 0) {
+            // Go through the entity rather than raw SQL: Spring Boot's naming strategy
+            // rewrites camelCase column names to snake_case (contactNumber ->
+            // contact_number), so hand-written SQL against the declared names breaks.
+            if (userDao.findByEmail(adminEmail) != null) {
                 log.info("Seed: admin {} already exists, skipping.", adminEmail);
                 return;
             }
-            jdbc.update("insert into `user` (name, contactNumber, email, password, status, role) "
-                            + "values (?, ?, ?, ?, 'true', 'admin')",
-                    adminName, adminContact, adminEmail, adminPassword);
+            User admin = new User();
+            admin.setName(adminName);
+            admin.setContactNumber(adminContact);
+            admin.setEmail(adminEmail);
+            admin.setPassword(adminPassword);
+            admin.setStatus("true");
+            admin.setRole("admin");
+            userDao.save(admin);
             log.info("Seed: admin user {} created.", adminEmail);
         } catch (Exception ex) {
             log.error("Seed: admin creation failed: {}", ex.getMessage());
