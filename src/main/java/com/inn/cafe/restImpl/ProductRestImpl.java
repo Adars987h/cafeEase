@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,9 +29,14 @@ public class ProductRestImpl implements ProductRest {
     SqlExecService sqlExecService;
 
     @Override
-    public ResponseEntity<Response> addNewProduct(Map<String, String> requestMap) {
+    public ResponseEntity<Response> addNewProduct(String name, String categoryId, String description, String price, MultipartFile image) {
         try{
-            ProductWrapper productWrapper = productService.addNewProduct(requestMap);
+            Map<String, String> requestMap = new HashMap<>();
+            requestMap.put("name", name);
+            requestMap.put("categoryId", categoryId);
+            requestMap.put("description", description);
+            requestMap.put("price", price);
+            ProductWrapper productWrapper = productService.addNewProduct(requestMap, image);
             return new ResponseEntity<>(new Response(productWrapper, "Product Added Successfully"), HttpStatus.OK);
         }catch (Exception ex){
             log.error(ex.getMessage());
@@ -51,9 +58,15 @@ public class ProductRestImpl implements ProductRest {
     }
 
     @Override
-    public ResponseEntity<Response> updateProduct(Map<String, String> requestMap) {
+    public ResponseEntity<Response> updateProduct(String id, String name, String categoryId, String description, String price, MultipartFile image) {
         try{
-            ProductWrapper productWrapper = productService.updateProduct(requestMap);
+            Map<String, String> requestMap = new HashMap<>();
+            requestMap.put("id", id);
+            requestMap.put("name", name);
+            requestMap.put("categoryId", categoryId);
+            requestMap.put("description", description);
+            requestMap.put("price", price);
+            ProductWrapper productWrapper = productService.updateProduct(requestMap, image);
             return new ResponseEntity<>(new Response(productWrapper, "Successfully Updated Product"), HttpStatus.OK);
         }catch(Exception ex){
             log.error(ex.getMessage());

@@ -31,6 +31,9 @@ public interface ProductDao extends JpaRepository<Product,Integer> {
     @Query("SELECT COUNT(p) > 0 FROM Product p WHERE p.name = :name")
     boolean isPresent(@Param("name") String name);
 
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.category.id = :categoryId")
+    long countByCategoryId(@Param("categoryId") int categoryId);
+
     @Query("SELECT p FROM Product p WHERE " +
             "(" +
             "(COALESCE(:categoryName, '') = '' OR p.category.name LIKE %:categoryName%) OR " +

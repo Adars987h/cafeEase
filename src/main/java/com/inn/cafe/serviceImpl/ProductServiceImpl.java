@@ -13,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,15 +32,16 @@ public class ProductServiceImpl implements ProductService {
     JwtFilter jwtFilter;
 
     @Override
-    public ProductWrapper addNewProduct(Map<String, String> requestMap) {
+    public ProductWrapper addNewProduct(Map<String, String> requestMap, MultipartFile image) {
         try{
             if(jwtFilter.isAdmin()){
                 if(validateProductMap(requestMap,false)){
                     if (productDao.isPresent(requestMap.get("name"))) {
                         throw new BadRequestException("Product with name " + requestMap.get("name") + " already exists.");
                     }
-                    Product product = productDao.save(getProductFromMap(requestMap, false));
-                    return new ProductWrapper(product);
+                    Product product = getProductFromMap(requestMap, false);
+                    setImageIfPresent(product, image);
+                    return new ProductWrapper(productDao.save(product));
                 }
                 throw new BadRequestException(CafeConstants.INVALID_PAYLOAD);
             } else {
@@ -63,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductWrapper updateProduct(Map<String, String> requestMap) {
+    public ProductWrapper updateProduct(Map<String, String> requestMap, MultipartFile image) {
         try{
             if(jwtFilter.isAdmin()){
                 if(validateProductMap(requestMap,true)){
@@ -71,6 +74,14 @@ public class ProductServiceImpl implements ProductService {
                     if(!optional.isEmpty()){
                         Product product=getProductFromMap(requestMap,true);
                         product.setStatus(optional.get().getStatus());
+                        if (image != null && !image.isEmpty()) {
+                            setImageIfPresent(product, image);
+                        } else {
+                            // No new file in this request -- keep whatever image (or
+                            // lack of one) the product already had, same as Category
+                            // does on update.
+                            product.setImage(optional.get().getImage());
+                        }
                         Product createdProduct = productDao.save(product);
                         return new ProductWrapper(createdProduct);
                     }
@@ -174,6 +185,17 @@ public class ProductServiceImpl implements ProductService {
             }
         }
         return false;
+    }
+
+    private void setImageIfPresent(Product product, MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return;
+        }
+        try {
+            product.setImage(image.getBytes());
+        } catch (IOException e) {
+            throw new BadRequestException("Some error occurred while processing the image");
+        }
     }
 
     private Product getProductFromMap(Map<String, String> requestMap, boolean isAdd) {

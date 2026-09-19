@@ -12,4 +12,6 @@ public interface CategoryService {
     List<Category> getAllCategories(String filterValue);
 
     Category updateCategory(int id, String name, MultipartFile image);
+
+    void deleteCategory(int id);
 }

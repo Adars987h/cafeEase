@@ -22,6 +22,12 @@ public interface UserRest {
     @GetMapping(path = "/get")
     ResponseEntity<Response> getAllUser();
 
+    // There was no way for a signed-in user to fetch their own record -- "/get"
+    // is the admin-only user list. Without this the FE cannot show a real name
+    // anywhere and has to derive a label from the JWT's email subject instead.
+    @GetMapping(path = "/profile")
+    ResponseEntity<Response> getProfile();
+
     @PostMapping(path = "/update")
     ResponseEntity<Response> update(@RequestBody(required = true) Map<String, String> requestMap);
 
