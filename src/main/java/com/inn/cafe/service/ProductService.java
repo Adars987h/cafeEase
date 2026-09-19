@@ -2,17 +2,18 @@ package com.inn.cafe.service;
 
 import com.inn.cafe.POJO.Product;
 import com.inn.cafe.wrapper.ProductWrapper;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
 public interface ProductService {
 
-    ProductWrapper addNewProduct(Map<String,String> requestMap);
+    ProductWrapper addNewProduct(Map<String,String> requestMap, MultipartFile image);
 
     List<ProductWrapper> getAllProduct();
 
-    ProductWrapper updateProduct(Map<String,String> requestMap);
+    ProductWrapper updateProduct(Map<String,String> requestMap, MultipartFile image);
 
     String deleteProduct(Integer id);
 

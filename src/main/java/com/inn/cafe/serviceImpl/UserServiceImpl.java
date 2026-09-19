@@ -122,9 +122,20 @@ public class UserServiceImpl implements UserService {
                 Optional<User> optional = userDao.findById(Integer.parseInt(requestMap.get("id")));
                 if (!optional.isEmpty()) {
                     userDao.updateStatus(requestMap.get("status"), Integer.parseInt(requestMap.get("id")));
-                    sendMailToAllAdmin(requestMap.get("status"), optional.get().getEmail(), userDao.getAllAdmin());
 
-                    sendMailToUser(requestMap.get("status"), optional.get().getEmail());
+                    // @Async on a private method has no effect: Spring's AOP proxy can only
+                    // intercept calls that come in through the bean, and a self-invocation
+                    // like this bypasses the proxy entirely, so these ran synchronously on
+                    // the request thread. That meant a mail failure (no SMTP configured, as
+                    // in local dev) turned a status change that had already succeeded in the
+                    // database into a 500 response. Catch and log instead, matching how
+                    // OrderRestImpl already handles the same failure mode for order mail.
+                    try {
+                        sendMailToAllAdmin(requestMap.get("status"), optional.get().getEmail(), userDao.getAllAdmin());
+                        sendMailToUser(requestMap.get("status"), optional.get().getEmail());
+                    } catch (Exception mailEx) {
+                        log.error("Status updated but notification mail failed: {}", mailEx.getMessage());
+                    }
 
                     return "User Status Updated to " + requestMap.get("status") + " Successfully";
                 } else {

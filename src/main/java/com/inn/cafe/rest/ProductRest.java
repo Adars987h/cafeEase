@@ -4,20 +4,32 @@ package com.inn.cafe.rest;
 import com.inn.cafe.dto.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
 @RequestMapping("/product")
 public interface ProductRest {
 
+    // multipart/form-data, not a JSON body, so a dish photo can ride along in
+    // the same request -- matches the convention CategoryRest already uses.
     @PostMapping("/add")
-    ResponseEntity<Response> addNewProduct(@RequestBody Map<String,String> requestMap);
+    ResponseEntity<Response> addNewProduct(@RequestParam String name,
+                                            @RequestParam String categoryId,
+                                            @RequestParam String description,
+                                            @RequestParam String price,
+                                            @RequestParam(value = "image", required = false) MultipartFile image);
 
     @GetMapping("/admin")
     ResponseEntity<Response> getAllProduct();
 
     @PostMapping("/update")
-    ResponseEntity<Response> updateProduct(@RequestBody Map<String,String> requestMap);
+    ResponseEntity<Response> updateProduct(@RequestParam String id,
+                                            @RequestParam String name,
+                                            @RequestParam String categoryId,
+                                            @RequestParam String description,
+                                            @RequestParam String price,
+                                            @RequestParam(value = "image", required = false) MultipartFile image);
 
     @PostMapping("/delete/{id}")
     ResponseEntity<Response> deleteProduct(@PathVariable Integer id);
