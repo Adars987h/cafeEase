@@ -28,8 +28,14 @@ public class Order {
 
     private static final long serialVersionUID = 1L;
 
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orderIdSequence")
-    @SequenceGenerator(name = "orderIdSequence", initialValue = 65000001, allocationSize = 1)
+    // IDENTITY (MySQL AUTO_INCREMENT), matching every other entity here.
+    // A SEQUENCE generator makes Hibernate emulate sequences with a single-column
+    // table that has no primary key. Managed MySQL providers commonly enforce
+    // sql_require_primary_key, which rejects that DDL outright, so the sequence
+    // table is never created and order inserts fail.
+    // To start order numbers high again, seed it once at the schema level:
+    //   ALTER TABLE orders AUTO_INCREMENT = 65000001;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "orderid")
     private int orderId;
