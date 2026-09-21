@@ -23,22 +23,43 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private CustomerUserDetailsService service;
 
-    Claims claims = null;
-    private String userName = null;
+    // These used to be plain instance fields on this @Component -- but a
+    // filter bean is a singleton shared across every concurrent request, so
+    // whichever request last set userName/claims left them in place for the
+    // NEXT request to read, even a token-less one. A guest request would
+    // then reuse a previous, unrelated user's name, call
+    // loadUserByUsername() with it, and call validateToken(null, ...),
+    // which throws (JJWT rejects a null token) -- turning every public,
+    // permitAll endpoint into an intermittent 401/500 depending on what
+    // request happened to run on this thread before it. ThreadLocal keeps
+    // each request's values isolated, matching how SecurityContextHolder
+    // itself is scoped.
+    private static final ThreadLocal<Claims> claimsHolder = new ThreadLocal<>();
+    private static final ThreadLocal<String> userNameHolder = new ThreadLocal<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
 
         if (httpServletRequest.getServletPath().matches("/user/login|/user/forgotPassword|/user/signup")) {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
-        } else {
+            return;
+        }
+
+        // Always reset for this request/thread first -- a token-less
+        // request must never see a previous request's leftovers.
+        claimsHolder.remove();
+        userNameHolder.remove();
+
+        try {
             String authorizationHeader = httpServletRequest.getHeader("Authorization");
             String token = null;
+            String userName = null;
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 token = authorizationHeader.substring(7);
                 userName = jwtUtil.extractUsername(token);
-                claims = jwtUtil.extractAllClaims(token);
+                userNameHolder.set(userName);
+                claimsHolder.set(jwtUtil.extractAllClaims(token));
             }
 
             if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -52,20 +73,22 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             }
             filterChain.doFilter(httpServletRequest, httpServletResponse);
+        } finally {
+            claimsHolder.remove();
+            userNameHolder.remove();
         }
     }
     public boolean isAdmin(){
-
-        return "admin".equalsIgnoreCase((String) claims.get("role"));
+        Claims claims = claimsHolder.get();
+        return claims != null && "admin".equalsIgnoreCase((String) claims.get("role"));
     }
 
     public boolean isUser(){
-
-        return "user".equalsIgnoreCase((String) claims.get("role"));
+        Claims claims = claimsHolder.get();
+        return claims != null && "user".equalsIgnoreCase((String) claims.get("role"));
     }
 
-    public  String getCurrentUser(){
-
-        return  userName;
+    public String getCurrentUser(){
+        return userNameHolder.get();
     }
 }
