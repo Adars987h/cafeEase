@@ -43,6 +43,12 @@ public class CartRestImpl implements CartRest {
     }
 
     @Override
+    public ResponseEntity<Response> clearCart() {
+        cartService.emptyCart();
+        return new ResponseEntity<>(new Response("Cart cleared."), HttpStatus.OK);
+    }
+
+    @Override
     public ResponseEntity<Response> getCart(String emailId) {
         try {
             User userDetail = customerUserDetailsService.getUserDetail();

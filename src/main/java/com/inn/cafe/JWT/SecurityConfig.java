@@ -12,6 +12,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,7 +44,14 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        // New and changed passwords are stored as "{bcrypt}...". Passwords saved before
+        // hashing was introduced have no "{id}" prefix; those are still verified as plain
+        // text, and CustomerUserDetailsService.updatePassword re-hashes them on the
+        // user's next successful login.
+        DelegatingPasswordEncoder encoder =
+                (DelegatingPasswordEncoder) PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        encoder.setDefaultPasswordEncoderForMatches(NoOpPasswordEncoder.getInstance());
+        return encoder;
     }
 
     @Bean
@@ -50,13 +59,15 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**")
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/user/login", "/user/signup", "/user/forgotPassword","/hello").permitAll()
+                        .requestMatchers("/user/login", "/user/signup", "/user/forgotPassword", "/user/resetPassword", "/hello").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/contact").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         // Read-only public menu browsing for the landing page, same as any
                         // restaurant site showing its menu before you sign in. Write
                         // operations on these same paths (POST/PUT/DELETE) are untouched
                         // and still require admin auth.
-                        .requestMatchers(HttpMethod.GET, "/category", "/product", "/orders/top-seller").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/category", "/product", "/product/getByCategory/*",
+                                "/product/getById/*", "/orders/top-seller").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

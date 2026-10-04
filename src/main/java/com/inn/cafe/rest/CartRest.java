@@ -15,4 +15,8 @@ public interface CartRest {
 
     @GetMapping
     ResponseEntity<Response> getCart(@RequestParam(required = false) String emailId);
+
+    // Empties the signed-in user's cart.
+    @DeleteMapping
+    ResponseEntity<Response> clearCart();
 }

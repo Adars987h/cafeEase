@@ -77,6 +77,10 @@ public class CategoryServiceImpl implements CategoryService {
                 if (!StringUtils.isEmpty(name)) {
                     Optional<Category> optional = categoryDao.findById(id);
                     if (optional.isPresent()) {
+                        // Adding already rejected duplicate names; renaming didn't.
+                        if (!optional.get().getName().equalsIgnoreCase(name) && categoryDao.isPresent(name)) {
+                            throw new BadRequestException("A category called " + name + " already exists.");
+                        }
                         Category category = getCategory(name, image);
                         category.setId(id);
                         if (category.getImage() == null) {

@@ -50,4 +50,14 @@ public class User implements Serializable {
 
     @Column(name="role")
     private String role;
+
+    // Password-reset link support. Only a SHA-256 of the emailed token is stored, so a
+    // leaked database row can't be used to reset the password.
+    @JsonIgnore
+    @Column(name="reset_token_hash")
+    private String resetTokenHash;
+
+    @JsonIgnore
+    @Column(name="reset_token_expiry")
+    private java.time.LocalDateTime resetTokenExpiry;
 }

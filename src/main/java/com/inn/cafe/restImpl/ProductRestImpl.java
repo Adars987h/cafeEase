@@ -1,6 +1,9 @@
 package com.inn.cafe.restImpl;
 
+import com.inn.cafe.JWT.JwtFilter;
 import com.inn.cafe.POJO.Product;
+import com.inn.cafe.constants.CafeConstants;
+import com.inn.cafe.exceptions.UnauthorizedException;
 import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.ProductRest;
 import com.inn.cafe.service.ProductService;
@@ -21,6 +24,9 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class ProductRestImpl implements ProductRest {
+
+   @Autowired
+   JwtFilter jwtFilter;
 
    @Autowired
     ProductService productService;
@@ -137,6 +143,9 @@ public class ProductRestImpl implements ProductRest {
 
     @Override
     public ResponseEntity<Response> addProductsAndCategoriesFromSql() throws Exception {
+        if (!jwtFilter.isAdmin()) {
+            throw new UnauthorizedException(CafeConstants.UNAUTHORISED_ACCESS);
+        }
         try {
             String file = "categories.sql";
             sqlExecService.executeSqlFromFile(file);

@@ -62,9 +62,29 @@ git clone https://github.com/Adars987h/cafeEase.git
 ```
 mvn clean install  
 ```
-#### 3. Configure the database connection in application.properties.
+#### 3. Set the required environment variables
+Copy `.env.example` and fill it in. `JWT_SECRET` is required: the app refuses to start
+without a random value of at least 32 characters (`openssl rand -base64 48`).
 
 #### 4. Run the Spring Boot application
+```
+mvn spring-boot:run
+```
+
+#### Quick local run, no MySQL needed
+Runs against an in-memory H2 database seeded with the menu and an admin
+(`admin@cafeease.test` / `admin-password-123`). Data resets on every restart.
+```
+mvn test-compile
+mvn spring-boot:run -Dspring-boot.run.useTestClasspath=true "-Dspring-boot.run.arguments=--spring.profiles.active=test --spring.config.additional-location=file:src/test/resources/ --app.seed.catalogue=file:src/test/resources/dev-catalogue.sql"
+```
+
+#### Tests
+```
+mvn test
+```
+Integration tests cover auth, passwords, the cart, the order lifecycle, bills and the contact
+form against H2. They also run in GitHub Actions on every push and pull request.
 
 ### Frontend :
 #### 1. Clone the repository:

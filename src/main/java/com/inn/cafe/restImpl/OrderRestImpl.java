@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -48,59 +49,34 @@ public class OrderRestImpl implements OrderRest {
 
     @Override
     public ResponseEntity<Response> placeOrder() {
-        try{
-            Order order = orderService.placeOrder();
-            sendOrderDetailsToUser(order);
-            return new ResponseEntity<>(new Response(order), HttpStatus.OK);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-            ex.printStackTrace();
-            return new ResponseEntity<>(new Response(ex.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Order order = orderService.placeOrder();
+        sendOrderDetailsToUser(order);
+        return new ResponseEntity<>(new Response(order), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Response> getOrders(OrderSearchRequest orderSearchRequest) {
-        try{
-            List<Order> orders = orderService.searchOrders(orderSearchRequest);
-            Response response = new Response(orders);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-            ex.printStackTrace();
-            return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+        return new ResponseEntity<>(new Response(orderService.searchOrders(orderSearchRequest)), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Response> cancelOrder(Integer orderId) {
-        try{
-            String result=orderService.cancelOrder(orderId);
-            Response response = new Response(result);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch(Exception ex){
-            log.error(ex.getMessage());
+        Order order = orderService.cancelOrder(orderId);
+        return new ResponseEntity<>(new Response(order, "Order " + orderId + " cancelled."), HttpStatus.OK);
+    }
 
-            return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @Override
+    public ResponseEntity<Response> updateStatus(Integer orderId, Map<String, String> body) {
+        Order order = orderService.updateStatus(orderId, body == null ? null : body.get("status"));
+        return new ResponseEntity<>(new Response(order, "Order " + orderId + " is now " + order.getOrderStatus() + "."), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Response> orderByAdmin(String emailId, List<OrderItem> items) {
-        try{
-            User user= userService.findByEmail(emailId);
-            
-            Order order= orderService.orderByAdmin(user,items);
-            sendOrderDetailsToUser(order);
-            Response response = new Response(order);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-            
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-
-            return  new ResponseEntity<>(new Response(ex.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        User user = userService.findByEmail(emailId);
+        Order order = orderService.orderByAdmin(user, items);
+        sendOrderDetailsToUser(order);
+        return new ResponseEntity<>(new Response(order), HttpStatus.OK);
     }
 
     private void sendOrderDetailsToUser(Order order) {
@@ -133,6 +109,8 @@ public class OrderRestImpl implements OrderRest {
         }
 //        productInformation.append("</table>");
         // Add total quantity and total price row
+        float tax = order.getTaxAmount() == null ? 0f : order.getTaxAmount();
+        productInformation.append("<tr><td colspan='4'>Tax (GST 5%)</td><td>").append(tax).append("</td></tr>");
         productInformation.append("<tr>")
                 .append("<td colspan='3'><strong>Total</strong></td>")
                 .append("<td>").append(order.getTotalQuantity()).append("</td>")

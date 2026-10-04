@@ -21,22 +21,24 @@ import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
-import lombok.*;
-import org.springframework.stereotype.Service;
+import org.springframework.core.io.ClassPathResource;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-@Data
+/**
+ * Lays out one invoice. Create a new instance per bill: it holds the document being built,
+ * so it must never be shared. (It used to be a singleton bean, so two bills downloaded at
+ * the same time wrote into each other.)
+ */
 public class BillCreatorUtil {
-    Document document;
-    PdfDocument pdfDocument;
-    String pdfName;
+    private Document document;
+    private PdfDocument pdfDocument;
+    private final OutputStream out;
     float threecol=190f;
     float twocol=285f;
     float twocol150=twocol+150f;
@@ -45,16 +47,12 @@ public class BillCreatorUtil {
     float[] itemTableWidth = {50f, 190f, 110f, 110f, 110f};
     float[] fullwidth ={threecol*3};
 
-    public BillCreatorUtil setPdfName(String pdfName){
-        this.pdfName = pdfName;
-        return this;
+    public BillCreatorUtil(OutputStream out) {
+        this.out = out;
     }
 
-    public void createDocument() throws FileNotFoundException {
-        String pdfFullPath= CafeConstants.STORE_LOCATION + pdfName;
-        File file = new File(pdfFullPath);
-        file.getParentFile().mkdirs();
-        PdfWriter pdfWriter=new PdfWriter(pdfFullPath);
+    public void createDocument() {
+        PdfWriter pdfWriter = new PdfWriter(out);
         pdfDocument=new PdfDocument(pdfWriter);
         pdfDocument.setDefaultPageSize(PageSize.A4);
         this.document=new Document(pdfDocument);
@@ -157,12 +155,11 @@ public class BillCreatorUtil {
         document.add(threeColTable4);
 
 
+        float tax = order.getTaxAmount() == null ? 0f : order.getTaxAmount();
         Table totalRowTable=new Table(itemTableWidth);
-        totalRowTable.addCell(new Cell().add("").setBorder(Border.NO_BORDER)).setMarginLeft(10f);
-        totalRowTable.addCell(new Cell().add("").setBorder(Border.NO_BORDER)).setMarginLeft(10f);
-        totalRowTable.addCell(new Cell().add("Total").setTextAlignment(TextAlignment.LEFT).setBorder(Border.NO_BORDER));
-        totalRowTable.addCell(new Cell().add(String.valueOf(totalQuantity)).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER));
-        totalRowTable.addCell(new Cell().add(String.valueOf(totalSum)).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER)).setMarginRight(15f);
+        addTotalRow(totalRowTable, "Subtotal", "", money(order.getSubtotal()), false);
+        addTotalRow(totalRowTable, "Tax (GST 5%)", "", money(tax), false);
+        addTotalRow(totalRowTable, "Total", String.valueOf(totalQuantity), money(totalSum), true);
 
         document.add(totalRowTable);
         document.add(fullWidthDashedBorder(fullwidth));
@@ -171,9 +168,22 @@ public class BillCreatorUtil {
     }
 
 
-    public void createTnc() throws MalformedURLException {
+    private static void addTotalRow(Table table, String label, String quantity, String amount, boolean bold) {
+        table.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+        table.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+        Cell labelCell = new Cell().add(label).setTextAlignment(TextAlignment.LEFT).setBorder(Border.NO_BORDER);
+        Cell amountCell = new Cell().add(amount).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER);
+        table.addCell(bold ? labelCell.setBold() : labelCell);
+        table.addCell(new Cell().add(quantity).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER));
+        table.addCell(bold ? amountCell.setBold() : amountCell);
+    }
+
+    private static String money(float value) {
+        return String.format("%.2f", value);
+    }
+
+    public void createTnc() throws IOException {
         List<String> tncList = getTermsAndConditions();
-        String imagePath="src/main/resources/cafeEase_watermark.png";
 
         float footerY = document.getBottomMargin();
         Table tb = new Table(fullwidth);
@@ -184,7 +194,13 @@ public class BillCreatorUtil {
         tb.setFixedPosition(40f, footerY, 530f);
         this.document.add(tb);
 
-        ImageData imageData = ImageDataFactory.create(imagePath);
+        // Read from the classpath. The old file path (src/main/resources/...) only exists in
+        // a source checkout, not in the Docker image, so every bill failed in production.
+        byte[] watermark;
+        try (InputStream in = new ClassPathResource("cafeEase_watermark.png").getInputStream()) {
+            watermark = in.readAllBytes();
+        }
+        ImageData imageData = ImageDataFactory.create(watermark);
         Image image = new Image(imageData);
         float x = pdfDocument.getDefaultPageSize().getWidth() / 2;
         float y = pdfDocument.getDefaultPageSize().getHeight() / 2;

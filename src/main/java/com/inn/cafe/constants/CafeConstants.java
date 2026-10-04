@@ -8,5 +8,7 @@ public class CafeConstants {
 
     public static final String UNAUTHORISED_ACCESS ="Access Denied - User is not authorized";
 
-    public static final String STORE_LOCATION="/tmp/";
+    // GST applied to every order. The cart total is the item subtotal; tax is added when
+    // the order is placed, and the bill shows subtotal, tax and total separately.
+    public static final float TAX_RATE = 0.05f;
 }

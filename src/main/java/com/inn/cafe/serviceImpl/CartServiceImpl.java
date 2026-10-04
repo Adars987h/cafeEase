@@ -6,6 +6,7 @@ import com.inn.cafe.POJO.User;
 import com.inn.cafe.dao.CartDao;
 import com.inn.cafe.dao.ProductDao;
 import com.inn.cafe.dto.OrderItem;
+import com.inn.cafe.exceptions.BadRequestException;
 import com.inn.cafe.service.CartService;
 import com.inn.cafe.service.UserService;
 import com.inn.cafe.wrapper.ProductWrapper;
@@ -13,8 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -38,17 +40,19 @@ public class CartServiceImpl implements CartService {
             User user = customerUserDetailsService.getUserDetail();
             Cart cart = cartDao.findByCustomerId(user);
 
-            Cart updatedCart;
+            Cart updated = setCartItemsAndTotalPrice(
+                    Objects.isNull(cart) ? new ArrayList<>() : cart.getItems(), items);
+            // Update the loaded cart in place. Saving a second Cart object with the same id
+            // merged onto the loaded one, whose @PreUpdate re-serialised its own stale item
+            // list over the change.
             if (Objects.isNull(cart)) {
-                updatedCart = setCartItemsAndTotalPrice(new ArrayList<>(), items);
-            } else {
-                updatedCart = setCartItemsAndTotalPrice(cart.getItems(), items);
-                updatedCart.setId(cart.getId());
+                cart = new Cart();
+                cart.setCustomerId(user);
             }
-
-            updatedCart.setCustomerId(user);
-            cartDao.save(updatedCart);
-            return cartDao.findByCustomerId(user);
+            cart.setItems(updated.getItems());
+            cart.setTotalAmount(updated.getTotalAmount());
+            cart.setTotalQuantity(updated.getTotalQuantity());
+            return cartDao.save(cart);
 
         } catch (Exception ex) {
             throw ex;
@@ -60,8 +64,12 @@ public class CartServiceImpl implements CartService {
         try {
             User user = customerUserDetailsService.getUserDetail();
             Cart cart = cartDao.findByCustomerId(user);
+            if (cart == null) {
+                return;
+            }
             cart.setItems(new ArrayList<>());
             cart.setTotalAmount(0);
+            cart.setTotalQuantity(0);
             cartDao.save(cart);
         } catch (Exception ex) {
             throw ex;
@@ -88,70 +96,58 @@ public class CartServiceImpl implements CartService {
         }
     }
 
-    private Cart setCartItemsAndTotalPrice(List<OrderItem> currentCartItems, List<OrderItem> itemsToAdd) {
-
-        HashMap<Integer, Integer> productIdToQuantityMap = new HashMap<>();
-        HashMap<Integer, Boolean> productAlreadyInCart = new HashMap<>();
-        List<Integer> productIds = new ArrayList<>();
-        for (OrderItem item : itemsToAdd) {
-            productIds.add(item.getProductId());
-            productIdToQuantityMap.put(item.getProductId(), item.getQuantity());
+    /**
+     * Applies quantity changes to the current cart lines and recomputes totals from scratch.
+     * Quantity 0 removes a line. New lines are only created for products that exist and are
+     * available. (The old loop removed lines from the list it was indexing, which skipped the
+     * next line's totals, and it accepted negative quantities and unavailable products.)
+     */
+    private Cart setCartItemsAndTotalPrice(List<OrderItem> currentCartItems, List<OrderItem> changes) {
+        Map<Integer, Integer> requested = new LinkedHashMap<>();
+        for (OrderItem change : changes) {
+            if (change.getQuantity() < 0) {
+                throw new BadRequestException("Quantity can't be negative.");
+            }
+            requested.put(change.getProductId(), change.getQuantity());
         }
 
-        List<ProductWrapper> products = productDao.getProductsWithProductIdIn(productIds);
-
-        HashMap<Integer, OrderItem> productIdToOrderItemMapForNewItems = new HashMap<>();
-        for (OrderItem item : itemsToAdd) {
-            productIdToOrderItemMapForNewItems.put(item.getProductId(), item);
-        }
-
-
-        float totalPrice = 0;
-        int totalQuantity = 0;
-
-        int currSize = currentCartItems.size();
-        for (int i = 0; i < currSize; i++) {
-            OrderItem item = currentCartItems.get(i);
-            if (productIdToOrderItemMapForNewItems.containsKey(item.getProductId())) {
-                productAlreadyInCart.put(item.getProductId(), Boolean.TRUE);
-                OrderItem newOrderItem = productIdToOrderItemMapForNewItems.get(item.getProductId());
-                item.setQuantity(newOrderItem.getQuantity());
-                item.setPrice(item.getPricePerUnit() * item.getQuantity());
-
-                if (item.getQuantity() == 0) {
-                    currentCartItems.remove(item);
-                    currSize--;
-                } else {
-                    totalPrice += item.getPrice();
-                    totalQuantity += item.getQuantity();
-                }
-            } else {
-                totalPrice += item.getPrice();
-                totalQuantity += item.getQuantity();
+        List<OrderItem> lines = new ArrayList<>();
+        for (OrderItem line : currentCartItems) {
+            Integer quantity = requested.remove(line.getProductId());
+            if (quantity != null) {
+                line.setQuantity(quantity);
+            }
+            if (line.getQuantity() > 0) {
+                line.setPrice(line.getPricePerUnit() * line.getQuantity());
+                lines.add(line);
             }
         }
 
-        for (ProductWrapper product : products) {
-            if (!productAlreadyInCart.getOrDefault(product.getId(), Boolean.FALSE)) {
+        List<Integer> newIds = requested.entrySet().stream()
+                .filter(e -> e.getValue() > 0).map(Map.Entry::getKey).toList();
+        if (!newIds.isEmpty()) {
+            List<ProductWrapper> products = productDao.getProductsWithProductIdIn(newIds);
+            for (ProductWrapper product : products) {
+                if (!"true".equalsIgnoreCase(product.getStatus())) {
+                    throw new BadRequestException(product.getName() + " isn't available right now.");
+                }
                 OrderItem item = new OrderItem();
                 item.setProductId(product.getId());
                 item.setProductName(product.getName());
-                item.setQuantity(productIdToQuantityMap.get(product.getId()));
+                item.setQuantity(requested.get(product.getId()));
                 item.setPricePerUnit(product.getPrice());
-                item.setPrice(productIdToQuantityMap.get(product.getId()) * product.getPrice());
-
-                currentCartItems.add(item);
-                totalPrice += item.getPrice();
-                totalQuantity += item.getQuantity();
+                item.setPrice(item.getQuantity() * product.getPrice());
+                lines.add(item);
+            }
+            if (products.size() != newIds.size()) {
+                throw new BadRequestException("One of those items is no longer on the menu.");
             }
         }
 
         Cart cart = new Cart();
-        cart.setItems(currentCartItems);
-        cart.setTotalAmount(totalPrice);
-        cart.setTotalQuantity(totalQuantity);
-
+        cart.setItems(lines);
+        cart.setTotalAmount((float) lines.stream().mapToDouble(OrderItem::getPrice).sum());
+        cart.setTotalQuantity(lines.stream().mapToInt(OrderItem::getQuantity).sum());
         return cart;
-
     }
 }

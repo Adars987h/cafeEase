@@ -58,14 +58,25 @@ public class EmailUtils {
         return cc;
     }
 
-    public void forgotMail(String to ,String subject, String password) throws MessagingException{
+    public void sendPasswordReset(String to, String resetLink) throws MessagingException {
         MimeMessage message = emailsender.createMimeMessage();
-        MimeMessageHelper helper =new MimeMessageHelper(message,true);
-        helper.setFrom("emailerspring1@gmail.com");
+        MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+        helper.setTo(to);
+        helper.setSubject("Reset your CafeEase password");
+        helper.setText("<p>Someone asked to reset the password for your CafeEase account.</p>"
+                + "<p><a href=\"" + resetLink + "\">Choose a new password</a>. The link works once and expires in 30 minutes.</p>"
+                + "<p>If that wasn't you, ignore this email. Your password hasn't changed.</p>", true);
+        emailsender.send(message);
+    }
+
+    public void sendWithAttachment(String to, String subject, String htmlBody, String fileName, byte[] attachment)
+            throws MessagingException {
+        MimeMessage message = emailsender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setTo(to);
         helper.setSubject(subject);
-        String htmlMsg = "<p><b>Your Login details for Cafe Management System</b><br><b>Email: </b>" + to +" <br><b>Password: </b>" + password + "<br><a href=\"http://localhost:4200/\">Click here to login</a></p>";
-        message.setContent(htmlMsg,"text/html");
+        helper.setText(htmlBody, true);
+        helper.addAttachment(fileName, new org.springframework.core.io.ByteArrayResource(attachment), "application/pdf");
         emailsender.send(message);
     }
 

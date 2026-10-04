@@ -1,27 +1,19 @@
 package com.inn.cafe.restImpl;
 
-import com.inn.cafe.JWT.CustomerUserDetailsService;
-import com.inn.cafe.JWT.JwtFilter;
 import com.inn.cafe.POJO.Order;
-import com.inn.cafe.POJO.User;
-import com.inn.cafe.dto.BillResponse;
-import com.inn.cafe.dto.OrderSearchRequest;
-import com.inn.cafe.exceptions.BadRequestException;
+import com.inn.cafe.dto.Response;
 import com.inn.cafe.rest.BillRest;
 import com.inn.cafe.service.BillService;
 import com.inn.cafe.service.OrderService;
-import com.inn.cafe.wrapper.CustomerWrapper;
+import com.inn.cafe.utils.EmailUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.List;
 
 
 @RestController
@@ -35,59 +27,41 @@ public class BillRestImpl implements BillRest {
     OrderService orderService;
 
     @Autowired
-    CustomerUserDetailsService customerUserDetailsService;
-
-    @Autowired
-    JwtFilter jwtFilter;
+    EmailUtils emailUtils;
 
     @Override
-    public ResponseEntity<InputStreamResource> downloadBill(Integer orderId) throws IOException {
-        try{
-            User user = customerUserDetailsService.getUserDetail();
-            OrderSearchRequest orderSearchRequest = new OrderSearchRequest();
-
-            if (jwtFilter.isUser())
-                orderSearchRequest.setCustomer(user);
-            orderSearchRequest.setOrderId(orderId);
-
-            List<Order> orders = orderService.searchOrders(orderSearchRequest);
-            if (!CollectionUtils.isEmpty(orders)){
-                Boolean isBillGenerated = billService.generateBill(new CustomerWrapper(user), orders.get(0));
-                if (isBillGenerated){
-                    BillResponse billResponse = billService.getBillStream(orderId);
-                    String fileName = billResponse.getFile().getName();
-                    long contentLength = billResponse.getFile().length();
-
-                    // Schedule the file for deletion after the response is sent
-                    new Thread(() -> {
-                        try {
-                            // Sleep to ensure the file is no longer in use
-                            Thread.sleep(30000);
-                            billService.deleteBill(orderId);
-                        } catch (IOException | InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-
-                    // Set the content type and headers
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
-
-                    return ResponseEntity.ok()
-                            .headers(headers)
-                            .contentLength(contentLength)
-                            .contentType(MediaType.APPLICATION_PDF)
-                            .body(billResponse.getInputStreamResource());
-                }
-            }
-            throw new BadRequestException("Please enter a Valid Order Id !!!!!");
-        }catch(Exception ex){
-            log.error(ex.getMessage());
-            ex.printStackTrace();
-            throw ex;
-        }
+    public ResponseEntity<byte[]> downloadBill(Integer orderId) {
+        // Exact id lookup with an ownership check. It used to take the first hit of a
+        // substring search, so a bill could be rendered for the wrong order.
+        Order order = orderService.getVisibleOrder(orderId);
+        byte[] pdf = billService.generateBill(order);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(ContentDisposition.attachment().filename(fileName(order)).build());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdf.length)
+                .body(pdf);
     }
 
+    @Override
+    public ResponseEntity<Response> emailBill(Integer orderId) {
+        Order order = orderService.getVisibleOrder(orderId);
+        String to = order.getCustomer().getEmail();
+        try {
+            emailUtils.sendWithAttachment(to, "Your CafeEase bill for order #" + order.getOrderId(),
+                    "<p>Thanks for ordering with CafeEase. Your bill for order #" + order.getOrderId()
+                            + " is attached.</p>",
+                    fileName(order), billService.generateBill(order));
+        } catch (Exception ex) {
+            log.error("Bill email for order {} failed: {}", orderId, ex.getMessage());
+            return new ResponseEntity<>(new Response("We couldn't send the email right now. Download the bill instead."),
+                    HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        return new ResponseEntity<>(new Response("Bill sent to " + to + "."), HttpStatus.OK);
+    }
+
+    private static String fileName(Order order) {
+        return "CafeEase-Invoice-" + order.getOrderId() + ".pdf";
+    }
 }
-
-
