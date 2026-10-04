@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,8 @@ import javax.sql.DataSource;
  * already exist. Safe to leave enabled - it becomes a no-op after the first run.
  *
  * <p>The seed SQL files can be overridden with {@code app.seed.catalogue} (comma-separated
- * classpath files); local dev and tests use a small image-free catalogue.
+ * resource locations, classpath by default); local dev and tests use a small image-free
+ * catalogue.
  *
  * <p>Admin credentials come from the environment rather than being hardcoded, so this file
  * can live in a public repository without shipping a usable login.
@@ -76,7 +77,8 @@ public class DataSeeder implements ApplicationRunner {
         try {
             ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
             for (String file : catalogueFiles) {
-                populator.addScript(new ClassPathResource(file.trim()));
+                // classpath by default; a "file:" prefix also works
+                populator.addScript(new DefaultResourceLoader().getResource(file.trim()));
             }
             populator.execute(dataSource);
             log.info("Seed: catalogue loaded ({} categories, {} products).",

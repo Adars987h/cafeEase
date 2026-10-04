@@ -75,7 +75,8 @@ mvn spring-boot:run
 Runs against an in-memory H2 database seeded with the menu and an admin
 (`admin@cafeease.test` / `admin-password-123`). Data resets on every restart.
 ```
-mvn spring-boot:run -Dspring-boot.run.profiles=test -Dspring-boot.run.useTestClasspath=true
+mvn test-compile
+mvn spring-boot:run -Dspring-boot.run.useTestClasspath=true "-Dspring-boot.run.arguments=--spring.profiles.active=test --spring.config.additional-location=file:src/test/resources/ --app.seed.catalogue=file:src/test/resources/dev-catalogue.sql"
 ```
 
 #### Tests
