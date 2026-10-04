@@ -1,7 +1,6 @@
 package com.inn.cafe.serviceImpl;
 
 import com.google.common.base.Strings;
-import com.inn.cafe.JWT.CustomerUserDetailsService;
 import com.inn.cafe.JWT.JwtFilter;
 import com.inn.cafe.JWT.JwtUtil;
 import com.inn.cafe.POJO.User;
@@ -13,7 +12,10 @@ import com.inn.cafe.service.UserService;
 import com.inn.cafe.utils.EmailUtils;
 import com.inn.cafe.wrapper.UserWrapper;
 import lombok.extern.slf4j.Slf4j;
+import com.inn.cafe.exceptions.AccountDisabledException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,6 +23,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,9 +47,6 @@ public class UserServiceImpl implements UserService {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    CustomerUserDetailsService customerUserDetailsService;
-
-    @Autowired
     JwtUtil jwtUtil;
 
     @Autowired
@@ -49,12 +55,22 @@ public class UserServiceImpl implements UserService {
     @Autowired
     EmailUtils emailUtils;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final int MIN_PASSWORD_LENGTH = 8;
+
 
     @Override
     public String signUp(Map<String, String> requestMap) {
-        log.info("Inside signup {}", requestMap);
+        log.info("Inside signup for {}", requestMap.get("email")); // never log the password
         try {
             if (validateSignUpMap(requestMap)) {
+                requirePasswordStrength(requestMap.get("password"));
                 User user = userDao.findByEmailId(requestMap.get("email"));
                 if (Objects.isNull(user)) {
                     userDao.save(getUserFromMap(requestMap));
@@ -79,17 +95,16 @@ public class UserServiceImpl implements UserService {
         try {
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(requestMap.get("email"), requestMap.get("password")));
-            if (auth.isAuthenticated()) {
-                if (customerUserDetailsService.getUserDetail().getStatus().equalsIgnoreCase("true")) {
-                    return "{token : " +
-                            jwtUtil.generateToken(customerUserDetailsService.getUserDetail().getEmail(),
-                                    customerUserDetailsService.getUserDetail().getRole()) + " }";
-                } else {
-                    throw new BadRequestException("Wait for Admin Approval !!!!!!!");
-                }
-            } else {
+            if (!auth.isAuthenticated()) {
                 throw new BadCredentialsException("Wrong Email or Password !!!!!");
             }
+            // Look the user up for this request rather than reading shared state.
+            User user = userDao.findByEmailId(auth.getName());
+            if (!"true".equalsIgnoreCase(user.getStatus())) {
+                throw new AccountDisabledException(
+                        "This account has been disabled. Contact the café to have it re-enabled.");
+            }
+            return jwtUtil.generateToken(user.getEmail(), user.getRole());
         } catch (Exception ex) {
             if(ex instanceof BadCredentialsException){
                 throw new BadCredentialsException("Wrong Email or Password !!!!!");
@@ -164,7 +179,7 @@ public class UserServiceImpl implements UserService {
         user.setName(requestMap.get("name"));
         user.setContactNumber(requestMap.get("contactNumber"));
         user.setEmail(requestMap.get("email"));
-        user.setPassword(requestMap.get("password"));
+        user.setPassword(passwordEncoder.encode(requestMap.get("password")));
 //        user.setStatus("false");
         user.setStatus("true");
         user.setRole("user");
@@ -202,15 +217,16 @@ public class UserServiceImpl implements UserService {
     public String changePassword(Map<String, String> requestMap) {
         try {
             User userObj = userDao.findByEmail(jwtFilter.getCurrentUser());
-            if (!userObj.equals(null)) {
-                if (userObj.getPassword().equals(requestMap.get("oldPassword"))) {
-                    userObj.setPassword(requestMap.get("newPassword"));
-                    userDao.save(userObj);
-                    return "Password Updated Successfully";
-                }
+            if (userObj == null) {
+                throw new UnauthorizedException(CafeConstants.UNAUTHORISED_ACCESS);
+            }
+            if (!passwordEncoder.matches(requestMap.get("oldPassword"), userObj.getPassword())) {
                 throw new BadRequestException("Incorrect Old Password");
             }
-            throw new RuntimeException("Something went wrong !!!!");
+            requirePasswordStrength(requestMap.get("newPassword"));
+            userObj.setPassword(passwordEncoder.encode(requestMap.get("newPassword")));
+            userDao.save(userObj);
+            return "Password Updated Successfully";
 
         } catch (Exception ex) {
 //            ex.printStackTrace();
@@ -222,15 +238,63 @@ public class UserServiceImpl implements UserService {
     @Override
     public String forgotPassword(Map<String, String> requestMap) throws Exception {
         try {
+            // Used to email the account's current password - only possible because passwords
+            // were stored in plain text. Now issues a single-use link valid for 30 minutes.
+            // The response is identical whether or not the email exists, so it can't be used
+            // to discover registered addresses.
             User user = userDao.findByEmail(requestMap.get("email"));
             if (!Objects.isNull(user) && !Strings.isNullOrEmpty(user.getEmail())) {
-                emailUtils.forgotMail(user.getEmail(), "Credentials by Cafe Management System", user.getPassword());
+                byte[] raw = new byte[32];
+                RANDOM.nextBytes(raw);
+                String token = Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
+                user.setResetTokenHash(sha256(token));
+                user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));
+                userDao.save(user);
+                try {
+                    emailUtils.sendPasswordReset(user.getEmail(), frontendUrl + "/reset-password?token=" + token);
+                } catch (Exception mailEx) {
+                    log.error("Password reset mail to {} failed: {}", user.getEmail(), mailEx.getMessage());
+                }
             }
-            return "Check your mail for Credentials";
+            return "If that email is registered, a reset link is on its way.";
 
         } catch (Exception ex) {
             log.error(ex.getMessage());
             throw ex;
+        }
+    }
+
+    @Override
+    public String resetPassword(Map<String, String> requestMap) {
+        String token = requestMap.get("token");
+        if (Strings.isNullOrEmpty(token)) {
+            throw new BadRequestException("This reset link is invalid or has expired.");
+        }
+        User user = userDao.findByResetTokenHash(sha256(token));
+        if (user == null || user.getResetTokenExpiry() == null
+                || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("This reset link is invalid or has expired.");
+        }
+        requirePasswordStrength(requestMap.get("password"));
+        user.setPassword(passwordEncoder.encode(requestMap.get("password")));
+        user.setResetTokenHash(null);
+        user.setResetTokenExpiry(null);
+        userDao.save(user);
+        return "Password updated. You can sign in now.";
+    }
+
+    private static void requirePasswordStrength(String password) {
+        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
+            throw new BadRequestException("Password must be at least " + MIN_PASSWORD_LENGTH + " characters.");
+        }
+    }
+
+    private static String sha256(String value) {
+        try {
+            return HexFormat.of().formatHex(
+                    MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
         }
     }
 

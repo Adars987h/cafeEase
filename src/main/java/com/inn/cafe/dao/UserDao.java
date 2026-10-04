@@ -23,5 +23,7 @@ public interface UserDao extends JpaRepository<User, Integer> {
 
     User findByEmail(String email);
 
+    User findByResetTokenHash(String resetTokenHash);
+
 
 }

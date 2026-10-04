@@ -11,6 +11,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.stereotype.Component;
 
 import com.inn.cafe.POJO.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.inn.cafe.dao.UserDao;
 
 import javax.sql.DataSource;
@@ -21,6 +22,9 @@ import javax.sql.DataSource;
  * <p>Deliberately opt-in ({@code app.seed.enabled}) and idempotent: the catalogue is only
  * loaded when the category table is empty, and the admin is only created when one does not
  * already exist. Safe to leave enabled - it becomes a no-op after the first run.
+ *
+ * <p>The seed SQL files can be overridden with {@code app.seed.catalogue} (comma-separated
+ * classpath files); local dev and tests use a small image-free catalogue.
  *
  * <p>Admin credentials come from the environment rather than being hardcoded, so this file
  * can live in a public repository without shipping a usable login.
@@ -33,6 +37,7 @@ public class DataSeeder implements ApplicationRunner {
     private final JdbcTemplate jdbc;
     private final DataSource dataSource;
     private final UserDao userDao;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.seed.admin.email:}")
     private String adminEmail;
@@ -40,16 +45,20 @@ public class DataSeeder implements ApplicationRunner {
     @Value("${app.seed.admin.password:}")
     private String adminPassword;
 
+    @Value("${app.seed.catalogue:categories.sql,product.sql}")
+    private String[] catalogueFiles;
+
     @Value("${app.seed.admin.name:Admin}")
     private String adminName;
 
     @Value("${app.seed.admin.contact:0000000000}")
     private String adminContact;
 
-    public DataSeeder(JdbcTemplate jdbc, DataSource dataSource, UserDao userDao) {
+    public DataSeeder(JdbcTemplate jdbc, DataSource dataSource, UserDao userDao, PasswordEncoder passwordEncoder) {
         this.jdbc = jdbc;
         this.dataSource = dataSource;
         this.userDao = userDao;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -65,9 +74,10 @@ public class DataSeeder implements ApplicationRunner {
             return;
         }
         try {
-            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(
-                    new ClassPathResource("categories.sql"),
-                    new ClassPathResource("product.sql"));
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
+            for (String file : catalogueFiles) {
+                populator.addScript(new ClassPathResource(file.trim()));
+            }
             populator.execute(dataSource);
             log.info("Seed: catalogue loaded ({} categories, {} products).",
                     jdbc.queryForObject("select count(*) from category", Integer.class),
@@ -96,7 +106,7 @@ public class DataSeeder implements ApplicationRunner {
             admin.setName(adminName);
             admin.setContactNumber(adminContact);
             admin.setEmail(adminEmail);
-            admin.setPassword(adminPassword);
+            admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setStatus("true");
             admin.setRole("admin");
             userDao.save(admin);

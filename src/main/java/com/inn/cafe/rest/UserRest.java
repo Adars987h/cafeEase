@@ -37,4 +37,8 @@ public interface UserRest {
     @PostMapping(path = "/forgotPassword")
     ResponseEntity<Response> forgotPassword(@RequestBody Map<String, String> requestMap) throws Exception;
 
+    // Completes the emailed reset link: {token, password}.
+    @PostMapping(path = "/resetPassword")
+    ResponseEntity<Response> resetPassword(@RequestBody Map<String, String> requestMap);
+
 }

@@ -40,8 +40,10 @@ public class UserRestImpl implements UserRest {
     @Override
     public ResponseEntity<Response> login(Map<String, String> requestMap) {
         try {
-            String result = userService.login(requestMap);
-            return new ResponseEntity<>(new Response(result), HttpStatus.OK);
+            String token = userService.login(requestMap);
+            // data.token is the contract. The legacy "{token : ...}" message is kept so a
+            // frontend build that still regex-parses it keeps working during rollout.
+            return new ResponseEntity<>(new Response(Map.of("token", token), "{token : " + token + " }"), HttpStatus.OK);
         } catch (Exception ex) {
             log.error(ex.getMessage());
             ex.printStackTrace();
@@ -96,6 +98,11 @@ public class UserRestImpl implements UserRest {
 //            ex.printStackTrace();
             throw ex;
         }
+    }
+
+    @Override
+    public ResponseEntity<Response> resetPassword(Map<String, String> requestMap) {
+        return new ResponseEntity<>(new Response(userService.resetPassword(requestMap)), HttpStatus.OK);
     }
 
     @Override

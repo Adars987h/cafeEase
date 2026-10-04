@@ -12,6 +12,7 @@ public interface UserService {
 
     String signUp(Map<String,String> requestMap);
 
+    /** Returns a signed JWT for valid credentials on an enabled account. */
     String login(Map<String,String> requestMap);
 
     List<UserWrapper> getAllUser();
@@ -22,8 +23,7 @@ public interface UserService {
 
     String forgotPassword(Map<String, String> requestMap) throws Exception;
 
+    String resetPassword(Map<String, String> requestMap);
+
     User findByEmail(String email);
-
-
-
 }
