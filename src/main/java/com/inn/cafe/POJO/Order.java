@@ -48,8 +48,13 @@ public class Order {
     @Transient
     private CustomerWrapper customerDetails;
 
+    // Item subtotal plus tax. Orders placed before tax existed have taxAmount null and a
+    // totalAmount equal to the subtotal.
     @Column(name = "totalamount")
     private float totalAmount;
+
+    @Column(name = "taxamount")
+    private Float taxAmount;
 
     @Column(name = "totalquantity")
     private int totalQuantity;
@@ -68,6 +73,15 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(name = "orderstatus", columnDefinition = "nvarchar(500)")
     private OrderStatus orderStatus;
+
+    /** Stable machine-readable status (e.g. "PREPARING"); orderStatus is the display label. */
+    public String getStatusCode() {
+        return orderStatus == null ? null : orderStatus.name();
+    }
+
+    public float getSubtotal() {
+        return totalAmount - (taxAmount == null ? 0f : taxAmount);
+    }
 
     @PrePersist
     @PreUpdate

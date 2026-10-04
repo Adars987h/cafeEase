@@ -14,7 +14,12 @@ public interface OrderService {
 
     List<Order> searchOrders(OrderSearchRequest orderSearchRequest);
 
-    String cancelOrder(Integer orderId);
+    Order cancelOrder(Integer orderId);
+
+    Order updateStatus(Integer orderId, String status);
+
+    /** The order if it exists and the current user may see it; throws NotFoundException otherwise. */
+    Order getVisibleOrder(Integer orderId);
 
     Order orderByAdmin(User user, List<OrderItem> items);
 

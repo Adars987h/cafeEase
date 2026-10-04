@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping(path = "/orders")
 public interface OrderRest {
@@ -23,8 +24,14 @@ public interface OrderRest {
     @PostMapping("/search")
     ResponseEntity<Response> getOrders(@RequestBody OrderSearchRequest orderSearchRequest);
 
+    // Marks the order CANCELLED (it used to delete the row). Customers can cancel their own
+    // order only before the kitchen starts it; admins can cancel any unfinished order.
     @PostMapping("/cancel/{id}")
     ResponseEntity<Response> cancelOrder(@PathVariable(name="id") Integer orderId);
+
+    // Admin: move an order along PLACED -> PREPARING -> READY -> COMPLETED. Body: {"status": "READY"}
+    @PostMapping("/{id}/status")
+    ResponseEntity<Response> updateStatus(@PathVariable(name = "id") Integer orderId, @RequestBody Map<String, String> body);
 
     @PostMapping("/admin")
     ResponseEntity<Response> orderByAdmin(@RequestParam String emailId, @RequestBody List<OrderItem> items);
